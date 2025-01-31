@@ -141,7 +141,7 @@ func NetPointsCommonMap(entries []entry.Entry, teamSchedules map[string]*schedul
 			games := opponentMap[opp]
 			for _, game := range games {
 				if game.Completed {
-					if game.HomeTeam.Name.String() == team {
+					if game.HomeTeamName() == team {
 						teamNet += game.HomeScore - game.AwayScore
 					} else {
 						teamNet += game.AwayScore - game.HomeScore

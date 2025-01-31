@@ -22,9 +22,17 @@ func (g *Game) WonBy(team string) bool {
 		return false
 	}
 
-	if g.HomeTeam.Name.String() == team {
+	if g.HomeTeamName() == team {
 		return g.HomeScore > g.AwayScore
 	}
 
 	return g.AwayScore > g.HomeScore
+}
+
+func (g* Game) HomeTeamName() string {
+	return g.HomeTeam.Name.String()
+}
+
+func (g* Game) AwayTeamName() string {
+	return g.AwayTeam.Name.String()
 }

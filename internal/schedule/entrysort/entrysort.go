@@ -7,31 +7,6 @@ import (
 	"sort"
 )
 
-const (
-	// Tiebreak methods
-	subgroup          = "subgroup"
-	elimination       = "elimination"
-	doubleElimination = "double elimination"
-	tripleElimination = "triple elimination"
-)
-
-type Sorter struct {
-	// Name is what we are sorting by, useful for debugging
-	Name string
-
-	// SortByMap is a function that will return a map of team names to a value that this Sorter will sort by
-	SortByMap func([]entry.Entry, map[string]*schedule.TeamSchedule) map[string]float64
-
-	// Tiebreaker is the next Sorter to use if there are ties
-	Tiebreaker *Sorter
-
-	TiebreakMethod string // "subgroup" | "elimination" |  "double elimination" | "triple elimination"
-
-	// Maybe a Validate() function to ensure the entries passed are valid for this sorter?
-
-	// Add a cache for recent results?
-}
-
 // SortEntries will sort the given entries by win percentage, default to tiebreakers specified
 // in https://www.nfl.com/standings/tie-breaking-procedures
 func SortEntries(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) ([]entry.Entry, error) {

@@ -3,6 +3,32 @@ package entrysort
 import (
 	"fmt"
 	"nfl-app/internal/entry"
+	"nfl-app/internal/schedule"
+)
+
+type Sorter struct {
+	// Name is what we are sorting by, useful for debugging
+	Name string
+
+	// SortByMap is a function that will return a map of team names to a value that this Sorter will sort by
+	SortByMap func([]entry.Entry, map[string]*schedule.TeamSchedule) map[string]float64
+
+	// Tiebreaker is the next Sorter to use if there are ties
+	Tiebreaker *Sorter
+
+	TiebreakMethod string // "subgroup" | "elimination" |  "double elimination" | "triple elimination"
+
+	// Maybe a Validate() function to ensure the entries passed are valid for this sorter?
+
+	// Add a cache for recent results?
+}
+
+const (
+	// Tiebreak methods
+	subgroup          = "subgroup"
+	elimination       = "elimination"
+	doubleElimination = "double elimination"
+	tripleElimination = "triple elimination"
 )
 
 // According to NFL tiebreaker rules (https://www.nfl.com/standings/tie-breaking-procedures),

@@ -1,11 +1,14 @@
 package entry
 
 import (
+	"fmt"
 	"nfl-app/internal/game"
 	"nfl-app/internal/stats"
 	"nfl-app/internal/team"
+	"os"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 type Entry struct {
@@ -20,7 +23,22 @@ func NewEntry(teamname string) *Entry {
 	}
 }
 
-func (e *Entry) UpdateStatsStreak(game *game.Game) {
+// Stat getters
+func (e *Entry) Wins() int {
+	return int(e.Stats[stats.StatWins].Value())
+}
+func (e *Entry) Losses() int {
+	return int(e.Stats[stats.StatLosses].Value())
+}
+func (e *Entry) Ties() int {
+	return int(e.Stats[stats.StatTies].Value())
+}
+func (e *Entry) WinPercentage() float64 {
+	return e.Stats[stats.StatWinPercent].Value()
+}
+
+
+func (e *Entry) UpdateStreak(game *game.Game) {
 	stat := e.Stats[stats.StatStreak]
 
 	if game.Tied() {
@@ -47,14 +65,14 @@ func (e *Entry) UpdateStatsStreak(game *game.Game) {
 }
 
 func (e *Entry) TeamWon(game *game.Game) bool {
-	if game.HomeTeam.Name.String() == e.Team.Name.String() {
+	if game.HomeTeamName() == e.Team.Name.String() {
 		return game.HomeScore > game.AwayScore
 	}
 	return game.AwayScore > game.HomeScore
 }
 
 func (e *Entry) TeamLost(game *game.Game) bool {
-	if game.HomeTeam.Name.String() == e.Team.Name.String() {
+	if game.HomeTeamName() == e.Team.Name.String() {
 		return game.HomeScore < game.AwayScore
 	}
 	return game.AwayScore < game.HomeScore
@@ -65,31 +83,31 @@ func (e *Entry) TeamTied(game *game.Game) bool {
 }
 
 func (e *Entry) TeamScore(game *game.Game) int {
-	if game.HomeTeam.Name.String() == e.Team.Name.String() {
+	if game.HomeTeamName() == e.Team.Name.String() {
 		return game.HomeScore
 	}
-	if game.AwayTeam.Name.String() == e.Team.Name.String() {
+	if game.AwayTeamName() == e.Team.Name.String() {
 		return game.AwayScore
 	}
 	return 0
 }
 
 func (e *Entry) OpponentScore(game *game.Game) int {
-	if game.HomeTeam.Name.String() == e.Team.Name.String() {
+	if game.HomeTeamName() == e.Team.Name.String() {
 		return game.AwayScore
 	}
-	if game.AwayTeam.Name.String() == e.Team.Name.String() {
+	if game.AwayTeamName() == e.Team.Name.String() {
 		return game.HomeScore
 	}
 	return 0
 }
 
 func (e *Entry) HomeTeam(game *game.Game) bool {
-	return game.HomeTeam.Name.String() == e.Team.Name.String()
+	return game.HomeTeamName() == e.Team.Name.String()
 }
 
 func (e *Entry) RoadTeam(game *game.Game) bool {
-	return game.AwayTeam.Name.String() == e.Team.Name.String()
+	return game.AwayTeamName() == e.Team.Name.String()
 }
 
 func (e *Entry) DivisionOpponent(game *game.Game) bool {
@@ -194,7 +212,7 @@ func (e *Entry) UpdateStats(game *game.Game) {
 	}
 
 	// Streak
-	e.UpdateStatsStreak(game)
+	e.UpdateStreak(game)
 
 	// Points
 	e.Stats[stats.StatPointsFor].SetValue(e.Stats[stats.StatPointsFor].Value() + float64(e.TeamScore(game)))
@@ -322,4 +340,17 @@ func Teams(entries []Entry) string {
 // The second slice will contain all entries after and including the given index
 func SplitAround(entries []Entry, index int) ([]Entry, []Entry) {
 	return entries[:index], entries[index:]
+}
+
+func Print(entries []Entry) {
+    // Use tabwriter to format the output
+    w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
+    fmt.Fprintln(w, "Team Name\tWins\tLosses\tTies\tWin Percentage\t")
+
+    // Print columns for team name, wins, losses, ties, win percentage
+    for _, entry := range entries {
+        fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%.2f\t\n", entry.TeamName(), entry.Wins(), entry.Losses(), entry.Ties(), entry.WinPercentage())
+    }
+
+    w.Flush()
 }

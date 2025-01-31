@@ -92,8 +92,8 @@ func (ls *LeagueSchedule) ToTeamSchedules() map[string]*TeamSchedule {
 			}
 
 			// Add TeamWeeks to TeamSchedule. Bye week will contain a nil game
-			teamSchedules[game.HomeTeam.Name.String()].Weeks[week.WeekNumber-1] = homeTeamWeek
-			teamSchedules[game.AwayTeam.Name.String()].Weeks[week.WeekNumber-1] = awayTeamWeek
+			teamSchedules[game.HomeTeamName()].Weeks[week.WeekNumber-1] = homeTeamWeek
+			teamSchedules[game.AwayTeamName()].Weeks[week.WeekNumber-1] = awayTeamWeek
 		}
 	}
 
@@ -196,10 +196,10 @@ func StrengthOf(team string, entries []entry.Entry, teamSchedules map[string]*Te
 
 		// Get the opponent's record
 		var opp string
-		if week.Game.HomeTeam.Name.String() == team {
-			opp = week.Game.AwayTeam.Name.String()
+		if week.Game.HomeTeamName() == team {
+			opp = week.Game.AwayTeamName()
 		} else {
-			opp = week.Game.HomeTeam.Name.String()
+			opp = week.Game.HomeTeamName()
 		}
 
 		// For victory, only consider games that were won

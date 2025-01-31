@@ -60,10 +60,10 @@ func (ts *TeamSchedule) OpponentMap() map[string][]game.Game {
 			continue
 		}
 
-		if week.Game.HomeTeam.Name.String() == ts.Team {
-			opponentMap[week.Game.AwayTeam.Name.String()] = append(opponentMap[week.Game.AwayTeam.Name.String()], *week.Game)
+		if week.Game.HomeTeamName() == ts.Team {
+			opponentMap[week.Game.AwayTeamName()] = append(opponentMap[week.Game.AwayTeamName()], *week.Game)
 		} else {
-			opponentMap[week.Game.HomeTeam.Name.String()] = append(opponentMap[week.Game.HomeTeam.Name.String()], *week.Game)
+			opponentMap[week.Game.HomeTeamName()] = append(opponentMap[week.Game.HomeTeamName()], *week.Game)
 		}
 	}
 
@@ -76,25 +76,23 @@ func CommonOpponents(teams []string, teamSchedules map[string]*TeamSchedule) []s
 		return nil
 	}
 
-	opponentMaps := make([]map[string][]game.Game, len(teams))
+	oppMaps := make([]map[string][]game.Game, len(teams))
 	for i, team := range teams {
-		opponentMaps[i] = teamSchedules[team].OpponentMap()
+		oppMaps[i] = teamSchedules[team].OpponentMap()
 	}
 
 	// Get all opponents for first team
-	firstOpponentMap := opponentMaps[0]
-	firstOpponents := make([]string, len(firstOpponentMap))
-	i := 0
-	for k := range firstOpponentMap {
-		firstOpponents[i] = k
-		i++
+	firstOppMap := oppMaps[0]
+	firstOpps := make([]string, 0)
+	for opp := range firstOppMap {
+		firstOpps = append(firstOpps, opp)
 	}
 
-	commonOpponents := make([]string, 0)
-	for _, opp := range firstOpponents {
+	commonOpps := make([]string, 0)
+	for _, opp := range firstOpps {
 		// Check if all other teams have played this opponent
 		played := true
-		for _, opponentMap := range opponentMaps[1:] {
+		for _, opponentMap := range oppMaps[1:] {
 			if _, ok := opponentMap[opp]; !ok {
 				played = false
 				break
@@ -103,11 +101,11 @@ func CommonOpponents(teams []string, teamSchedules map[string]*TeamSchedule) []s
 
 		if played {
 			// All teams have played this opponent
-			commonOpponents = append(commonOpponents, opp)
+			commonOpps = append(commonOpps, opp)
 		}
 	}
 
-	return commonOpponents
+	return commonOpps
 }
 
 func CommonGamesRecords(entries []entry.Entry, teamSchedules map[string]*TeamSchedule) map[string]*entry.Record {
@@ -117,14 +115,14 @@ func CommonGamesRecords(entries []entry.Entry, teamSchedules map[string]*TeamSch
 		teamNames = append(teamNames, entry.TeamName())
 	}
 
-	commonOpponents := CommonOpponents(teamNames, teamSchedules)
+	commonOpps := CommonOpponents(teamNames, teamSchedules)
 	commonGamesRecord := make(map[string]*entry.Record)
 
 	for _, team := range teamNames {
 		record := &entry.Record{}
 		opponentMap := teamSchedules[team].OpponentMap()
 
-		for _, opp := range commonOpponents {
+		for _, opp := range commonOpps {
 			games := opponentMap[opp]
 			for _, game := range games {
 				if game.Completed {
@@ -154,8 +152,8 @@ func HeadToHeadGames(teams []entry.Entry, teamSchedules map[string]*TeamSchedule
 	}
 
 	// Find all games between these teams
-	headToHeadGamesSeen := make(map[string]bool)
-	headToHeadGames := make([]*game.Game, 0)
+	h2hGamesSeen := make(map[string]bool)
+	h2hGames := make([]*game.Game, 0)
 	for _, team := range teamNames {
 		schedule := teamSchedules[team]
 		for _, week := range schedule.Weeks {
@@ -164,47 +162,41 @@ func HeadToHeadGames(teams []entry.Entry, teamSchedules map[string]*TeamSchedule
 			}
 
 			// Check if we've already seen this game
-			if _, ok := headToHeadGamesSeen[fmt.Sprintf("%s@%s", week.Game.HomeTeam.Name.String(), week.Game.AwayTeam.Name.String())]; ok {
+			if _, ok := h2hGamesSeen[fmt.Sprintf("%s@%s", week.Game.HomeTeamName(), week.Game.AwayTeamName())]; ok {
 				continue
 			}
 
 			// Check if the game is amongst these teams
-			if slices.Contains(teamNames, week.Game.HomeTeam.Name.String()) &&
-				slices.Contains(teamNames, week.Game.AwayTeam.Name.String()) {
-				headToHeadGames = append(headToHeadGames, week.Game)
+			if slices.Contains(teamNames, week.Game.HomeTeamName()) &&
+				slices.Contains(teamNames, week.Game.AwayTeamName()) {
+				h2hGames = append(h2hGames, week.Game)
 				// Mark the game as seen so we don't add it again when we loop through the other team's schedule
 				// Note that we're relying on the fact that the game is unique by home and away team
-				headToHeadGamesSeen[fmt.Sprintf("%s@%s", week.Game.HomeTeam.Name.String(), week.Game.AwayTeam.Name.String())] = true
+				h2hGamesSeen[fmt.Sprintf("%s@%s", week.Game.HomeTeamName(), week.Game.AwayTeamName())] = true
 			}
 		}
 	}
 
-	return headToHeadGames
+	return h2hGames
 }
 
 // HeadToHeadGames returns a map of team names to their record against one another
-func HeadToHeadRecords(teams []entry.Entry, teamSchedules map[string]*TeamSchedule) map[string]*entry.Record {
-	headToHeadGames := HeadToHeadGames(teams, teamSchedules)
-	headToHeadRecords := make(map[string]*entry.Record)
+func HeadToHeadRecords(entries []entry.Entry, teamSchedules map[string]*TeamSchedule) map[string]*entry.Record {
+	h2hGames := HeadToHeadGames(entries, teamSchedules)
+	h2hRecords := make(map[string]*entry.Record)
 
 	// Initialize record for each team
-	for _, team := range teams {
-		headToHeadRecords[team.Team.Name.String()] = &entry.Record{}
+	for _, ent := range entries {
+		h2hRecords[ent.Team.Name.String()] = &entry.Record{}
 	}
 
-	for _, game := range headToHeadGames {
-		switch {
-		case game.HomeScore > game.AwayScore:
-			headToHeadRecords[game.HomeTeam.Name.String()].AddWin()
-			headToHeadRecords[game.AwayTeam.Name.String()].AddLoss()
-		case game.HomeScore < game.AwayScore:
-			headToHeadRecords[game.HomeTeam.Name.String()].AddLoss()
-			headToHeadRecords[game.AwayTeam.Name.String()].AddWin()
-		default:
-			headToHeadRecords[game.HomeTeam.Name.String()].AddTie()
-			headToHeadRecords[game.AwayTeam.Name.String()].AddTie()
-		}
+	for _, game := range h2hGames {
+		homeRecord := h2hRecords[game.HomeTeamName()]
+		awayRecord := h2hRecords[game.AwayTeamName()]
+
+		homeRecord.UpdateFor(game.HomeTeamName(), game)
+		awayRecord.UpdateFor(game.AwayTeamName(), game)
 	}
 
-	return headToHeadRecords
+	return h2hRecords
 }
