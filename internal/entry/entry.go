@@ -16,12 +16,131 @@ type Entry struct {
 	Stats stats.Stats
 }
 
+type Entry2 struct {
+	Team team.Team
+	StatSheet stats.StatSheet
+}
+
+func (e *Entry2) AddGame(game game.Game2) {
+	// Records
+	e.UpdateRecords(game)
+
+	// Points
+	e.UpdatePoints(game)
+
+	// Streak
+	e.UpdateStreak(game)
+
+	// Certain stats cannot be calculated from one game, they are dependent on the entire schedule
+	// Strength of Victory, Strength of Schedule, Clincher, etc
+	// Calculate these later
+}
+
+func (e *Entry2) UpdateRecords(game game.Game2) {
+	teamname := e.Team.Name.String()
+
+	switch {
+	case game.Winner == teamname:
+		// Overall
+		e.StatSheet.Record.AddWin()
+
+		// Home/Away
+		if game.Home == teamname {
+			e.StatSheet.HomeRecord.AddWin()
+		} else {
+			e.StatSheet.AwayRecord.AddWin()
+		}
+
+		// Division
+		if team.SameDivision(game.Winner, game.Loser) {
+			e.StatSheet.DivisionRecord.AddWin()
+		}
+
+		// Conference
+		if team.SameConference(game.Winner, game.Loser) {
+			e.StatSheet.ConferenceRecord.AddWin()
+		}
+	case game.Loser == teamname:
+		// Overall
+		e.StatSheet.Record.AddLoss()
+
+		// Home/Away
+		if game.Home == teamname {
+			e.StatSheet.HomeRecord.AddLoss()
+		} else {
+			e.StatSheet.AwayRecord.AddLoss()
+		}
+
+		// Division
+		if team.SameDivision(game.Winner, game.Loser) {
+			e.StatSheet.DivisionRecord.AddLoss()
+		}
+
+		// Conference
+		if team.SameConference(game.Winner, game.Loser) {
+			e.StatSheet.ConferenceRecord.AddLoss()
+		}
+	}
+}
+
+func (e *Entry2) UpdatePoints(game game.Game2) {
+	switch {
+	case game.Winner == e.Team.Name.String():
+		// Overall
+		e.StatSheet.Points.AddFor(game.PtsWin)
+		e.StatSheet.Points.AddAgainst(game.PtsLose)
+
+		// Conference
+		if team.SameConference(game.Winner, game.Loser) {
+			e.StatSheet.ConferencePoints.AddFor(game.PtsWin)
+			e.StatSheet.ConferencePoints.AddAgainst(game.PtsLose)
+		}
+	case game.Loser == e.Team.Name.String():
+		// Overall
+		e.StatSheet.Points.AddFor(game.PtsLose)
+		e.StatSheet.Points.AddAgainst(game.PtsWin)
+
+		// Conference
+		if team.SameConference(game.Winner, game.Loser) {
+			e.StatSheet.ConferencePoints.AddFor(game.PtsLose)
+			e.StatSheet.ConferencePoints.AddAgainst(game.PtsWin)
+		}
+	}
+}
+
+func (e *Entry2) UpdateStreak(game game.Game2) {
+	switch {
+	case game.Winner == e.Team.Name.String():
+		if e.StatSheet.Streak > 0 {
+			e.StatSheet.Streak++
+		} else {
+			e.StatSheet.Streak = 1
+		}
+	case game.Loser == e.Team.Name.String():
+		if e.StatSheet.Streak < 0 {
+			e.StatSheet.Streak--
+		} else {
+			e.StatSheet.Streak = -1
+		}
+	default:
+		e.StatSheet.Streak = 0
+	}
+}
+
 func NewEntry(teamname string) *Entry {
 	return &Entry{
 		Team:  team.DisplayNameToTeam(teamname),
 		Stats: stats.NewStats(),
 	}
 }
+
+func NewEntry2(teamname string) *Entry2 {
+	return &Entry2{
+		Team: team.DisplayNameToTeam(teamname),
+		StatSheet: stats.NewStatSheet(),
+	}
+}
+
 
 // Stat getters
 func (e *Entry) Wins() int {
@@ -35,6 +154,9 @@ func (e *Entry) Ties() int {
 }
 func (e *Entry) WinPercentage() float64 {
 	return e.Stats[stats.StatWinPercent].Value()
+}
+func (e *Entry) Seed() int {
+	return int(e.Stats[stats.StatPlayoffSeed].Value())
 }
 
 
@@ -345,11 +467,11 @@ func SplitAround(entries []Entry, index int) ([]Entry, []Entry) {
 func Print(entries []Entry) {
     // Use tabwriter to format the output
     w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
-    fmt.Fprintln(w, "Team Name\tWins\tLosses\tTies\tWin Percentage\t")
+    fmt.Fprintln(w, "Seed\tTeam Name\tWins\tLosses\tTies\tWin Percentage\t")
 
     // Print columns for team name, wins, losses, ties, win percentage
     for _, entry := range entries {
-        fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%.2f\t\n", entry.TeamName(), entry.Wins(), entry.Losses(), entry.Ties(), entry.WinPercentage())
+        fmt.Fprintf(w, "%d\t%s\t%d\t%d\t%d\t%.2f\t\n", entry.Seed(), entry.TeamName(), entry.Wins(), entry.Losses(), entry.Ties(), entry.WinPercentage())
     }
 
     w.Flush()

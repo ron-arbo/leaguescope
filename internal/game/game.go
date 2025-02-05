@@ -2,6 +2,7 @@ package game
 
 import (
 	"nfl-app/internal/team"
+	"time"
 )
 
 // Common struct for both TeamSchedule and LeagueSchedule
@@ -11,6 +12,25 @@ type Game struct {
 	HomeScore int
 	AwayScore int
 	Completed bool
+}
+
+type Game2 struct {
+	Time time.Time
+
+	Winner string
+	Loser string
+
+	Home string
+	Away string
+
+	PtsWin int
+	PtsLose int
+
+	YardsWin int
+	YardsLose int
+
+	ToWin int
+	ToLose int
 }
 
 func (g *Game) Tied() bool {

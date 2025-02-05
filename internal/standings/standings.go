@@ -129,35 +129,3 @@ func (s *Standings) AFCEntries() []entry.Entry {
 func (s *Standings) NFCEntries() []entry.Entry {
 	return s.ConferenceStandings[team.NFC].Entries
 }
-
-// Calculate seed
-// Sort each conference by win pct (We should take tiebreakers into account https://www.nfl.com/standings/tie-breaking-procedures)
-// Loop through teams, if team is from division we haven't seen, assign it to highest available seed in 1-4
-// If team is from division we HAVE seen, assign it to highest available seed in 5+
-// func (s *Standings) AssignPlayoffSeeds(teamSchedules map[string]*schedule.TeamSchedule) {
-
-// 	for _, conf := range team.Conferences {
-// 		sortedEntries, err := entrysort.SortEntries(s.ConferenceStandings[conf].Entries, teamSchedules)
-// 		if err != nil {
-// 			// TODO
-// 			log.Fatalf("Failed to sort entries: %v", err)
-// 		}
-
-// 		divisionSeedAvailable := 1
-// 		otherSeedAvailable := 5
-
-// 		divisionsSeen := make(map[string]bool)
-// 		for _, entry := range sortedEntries {
-// 			// If we haven't seen the division yet, we know this is a division winner,
-// 			// so it assign it to the highest available seed in 1-4. Otherwise assign it to 5+
-// 			if _, ok := divisionsSeen[entry.Team.Division]; !ok {
-// 				entry.Stats[stats.StatPlayoffSeed].SetValue(float64(divisionSeedAvailable))
-// 				divisionSeedAvailable++
-// 				divisionsSeen[entry.Team.Division] = true
-// 			} else {
-// 				entry.Stats[stats.StatPlayoffSeed].SetValue(float64(otherSeedAvailable))
-// 				otherSeedAvailable++
-// 			}
-// 		}
-// 	}
-// }

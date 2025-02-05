@@ -1,6 +1,8 @@
 package stats
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Stat struct {
 	Name string

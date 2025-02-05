@@ -155,7 +155,7 @@ func (ls *LeagueSchedule) ToStandings() *standings.Standings {
 	}
 
 	// Calculate playoffs seeds
-	// standings.AssignPlayoffSeeds()
+	// entrysort.AssignPlayoffSeeds(standings, teamSchedules)
 
 	// TODO: Calculate clincher
 

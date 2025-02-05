@@ -341,3 +341,11 @@ func DisplayNameToTeam(displayName string) Team {
 func (tn TeamName) String() string {
 	return fmt.Sprintf("%s %s", tn.Location, tn.Name)
 }
+
+func SameDivision(t1, t2 string) bool {
+	return DisplayNameToTeam(t1).Division == DisplayNameToTeam(t2).Division
+}
+
+func SameConference(t1, t2 string) bool {
+	return DisplayNameToTeam(t1).Conference == DisplayNameToTeam(t2).Conference
+}

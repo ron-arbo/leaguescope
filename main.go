@@ -2,38 +2,18 @@ package main
 
 import (
 	"fmt"
-	"nfl-app/internal/entry"
 	"nfl-app/internal/schedule"
-	"nfl-app/internal/schedule/entrysort"
+	"nfl-app/internal/scraper"
 )
 
 func main() {
-
-	scheduleObj := schedule.NewLeagueSchedule()
-	scheduleObj.Populate2()
-
-	teamSchedules := scheduleObj.ToTeamSchedules()
-
-	// standings, err := scheduleObj.ToStandings()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	standingsObj := scheduleObj.ToStandings()
-
-	// Find the entry for the panthers and saints
-	var entries []entry.Entry
-	for _, entry := range standingsObj.AllEntries() {
-		if entry.TeamName() == "Carolina Panthers" || entry.TeamName() == "New Orleans Saints" || entry.TeamName() == "Chicago Bears" {
-			entries = append(entries, entry)
-		}
-	}
-
-	// Sort the entries
-	sortedEntries, err := entrysort.SortEntries(entries, teamSchedules)
+	scrapedRows, err := scraper.ScrapeYear("2024")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(entry.Teams(sortedEntries))
 
+	sched := schedule.CreateSchedule(scrapedRows)
+
+	entries := schedule.CreateEntries(sched)
+	fmt.Print(entries[0])
 }
