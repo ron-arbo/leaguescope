@@ -297,11 +297,11 @@ func SeedEntries(entries []entry.Entry, ts map[string]schedule.Schedule) ([]entr
 		// If we haven't seen the division yet, we know this is a division winner,
 		// so it assign it to the highest available seed in 1-4. Otherwise assign it to 5+
 		if _, ok := divisionsSeen[entry.Team.Division]; !ok {
-			entry.StatSheet.Seed = divSeed
+			entry.Stats.Seed = divSeed
 			divSeed++
 			divisionsSeen[entry.Team.Division] = true
 		} else {
-			entry.StatSheet.Seed = wildSeed
+			entry.Stats.Seed = wildSeed
 			wildSeed++
 		}
 	}

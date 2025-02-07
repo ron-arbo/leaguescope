@@ -174,8 +174,8 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 	for i, entry := range entries {
 		sov := StrengthOfVictory(entry.TeamName(), entries, teamSchedules)
 		sos := StrengthOfSchedule(entry.TeamName(), entries, teamSchedules)
-		entry.StatSheet.StrengthOfVictory = sov
-		entry.StatSheet.StrengthOfSchedule = sos
+		entry.Stats.StrengthOfVictory = sov
+		entry.Stats.StrengthOfSchedule = sos
 
 		// TODO: Use pointer to avoid this?
 		entries[i] = entry
@@ -191,11 +191,11 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 		conferenceRankPointsAgainst := Ranking(conferenceEntries, pointsAgainst)
 
 		for _, entry := range conferenceEntries {
-			entry.StatSheet.LeagueRankPointsFor = leagueRankPointsFor[entry.TeamName()]
-			entry.StatSheet.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.TeamName()]
+			entry.Stats.LeagueRankPointsFor = leagueRankPointsFor[entry.TeamName()]
+			entry.Stats.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.TeamName()]
 
-			entry.StatSheet.ConferenceRankPointsFor = conferenceRankPointsFor[entry.TeamName()]
-			entry.StatSheet.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.TeamName()]
+			entry.Stats.ConferenceRankPointsFor = conferenceRankPointsFor[entry.TeamName()]
+			entry.Stats.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.TeamName()]
 		}
 	}
 

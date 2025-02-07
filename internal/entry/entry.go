@@ -9,8 +9,8 @@ import (
 )
 
 type Entry struct {
-	Team      team.Team
-	StatSheet stats.StatSheet
+	Team  team.Team
+	Stats stats.Stats
 }
 
 func ConferenceEntries(entries []Entry, conference string) []Entry {
@@ -48,43 +48,43 @@ func (e *Entry) UpdateRecords(game game.Game) {
 	switch {
 	case game.Winner == teamname:
 		// Overall
-		e.StatSheet.Record.AddWin()
+		e.Stats.Record.AddWin()
 
 		// Home/Away
 		if game.Home == teamname {
-			e.StatSheet.HomeRecord.AddWin()
+			e.Stats.HomeRecord.AddWin()
 		} else {
-			e.StatSheet.AwayRecord.AddWin()
+			e.Stats.AwayRecord.AddWin()
 		}
 
 		// Division
 		if team.SameDivision(game.Winner, game.Loser) {
-			e.StatSheet.DivisionRecord.AddWin()
+			e.Stats.DivisionRecord.AddWin()
 		}
 
 		// Conference
 		if team.SameConference(game.Winner, game.Loser) {
-			e.StatSheet.ConferenceRecord.AddWin()
+			e.Stats.ConferenceRecord.AddWin()
 		}
 	case game.Loser == teamname:
 		// Overall
-		e.StatSheet.Record.AddLoss()
+		e.Stats.Record.AddLoss()
 
 		// Home/Away
 		if game.Home == teamname {
-			e.StatSheet.HomeRecord.AddLoss()
+			e.Stats.HomeRecord.AddLoss()
 		} else {
-			e.StatSheet.AwayRecord.AddLoss()
+			e.Stats.AwayRecord.AddLoss()
 		}
 
 		// Division
 		if team.SameDivision(game.Winner, game.Loser) {
-			e.StatSheet.DivisionRecord.AddLoss()
+			e.Stats.DivisionRecord.AddLoss()
 		}
 
 		// Conference
 		if team.SameConference(game.Winner, game.Loser) {
-			e.StatSheet.ConferenceRecord.AddLoss()
+			e.Stats.ConferenceRecord.AddLoss()
 		}
 	}
 }
@@ -93,23 +93,23 @@ func (e *Entry) UpdatePoints(game game.Game) {
 	switch {
 	case game.Winner == e.Team.Name.String():
 		// Overall
-		e.StatSheet.Points.AddFor(game.PtsWin)
-		e.StatSheet.Points.AddAgainst(game.PtsLose)
+		e.Stats.Points.AddFor(game.PtsWin)
+		e.Stats.Points.AddAgainst(game.PtsLose)
 
 		// Conference
 		if team.SameConference(game.Winner, game.Loser) {
-			e.StatSheet.ConferencePoints.AddFor(game.PtsWin)
-			e.StatSheet.ConferencePoints.AddAgainst(game.PtsLose)
+			e.Stats.ConferencePoints.AddFor(game.PtsWin)
+			e.Stats.ConferencePoints.AddAgainst(game.PtsLose)
 		}
 	case game.Loser == e.Team.Name.String():
 		// Overall
-		e.StatSheet.Points.AddFor(game.PtsLose)
-		e.StatSheet.Points.AddAgainst(game.PtsWin)
+		e.Stats.Points.AddFor(game.PtsLose)
+		e.Stats.Points.AddAgainst(game.PtsWin)
 
 		// Conference
 		if team.SameConference(game.Winner, game.Loser) {
-			e.StatSheet.ConferencePoints.AddFor(game.PtsLose)
-			e.StatSheet.ConferencePoints.AddAgainst(game.PtsWin)
+			e.Stats.ConferencePoints.AddFor(game.PtsLose)
+			e.Stats.ConferencePoints.AddAgainst(game.PtsWin)
 		}
 	}
 }
@@ -117,26 +117,26 @@ func (e *Entry) UpdatePoints(game game.Game) {
 func (e *Entry) UpdateStreak(game game.Game) {
 	switch {
 	case game.Winner == e.Team.Name.String():
-		if e.StatSheet.Streak > 0 {
-			e.StatSheet.Streak++
+		if e.Stats.Streak > 0 {
+			e.Stats.Streak++
 		} else {
-			e.StatSheet.Streak = 1
+			e.Stats.Streak = 1
 		}
 	case game.Loser == e.Team.Name.String():
-		if e.StatSheet.Streak < 0 {
-			e.StatSheet.Streak--
+		if e.Stats.Streak < 0 {
+			e.Stats.Streak--
 		} else {
-			e.StatSheet.Streak = -1
+			e.Stats.Streak = -1
 		}
 	default:
-		e.StatSheet.Streak = 0
+		e.Stats.Streak = 0
 	}
 }
 
 func NewEntry(teamname string) *Entry {
 	return &Entry{
-		Team:      team.DisplayNameToTeam(teamname),
-		StatSheet: stats.NewStatSheet(),
+		Team:  team.DisplayNameToTeam(teamname),
+		Stats: stats.NewStats(),
 	}
 }
 

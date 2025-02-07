@@ -1,6 +1,6 @@
 package stats
 
-type StatSheet struct {
+type Stats struct {
 	// Records
 	Record           Record
 	HomeRecord       Record
@@ -29,6 +29,6 @@ type StatSheet struct {
 	// TODO: Clincher
 }
 
-func NewStatSheet() StatSheet {
-	return StatSheet{}
+func NewStats() Stats {
+	return Stats{}
 }

@@ -205,9 +205,9 @@ func StrengthOf(team string, entries []entry.Entry, ts map[string]Schedule, attr
 		// For schedule, consider all games
 		oppEntry := teamMap[opp]
 		oppRecord := entry.NewRecord(
-			oppEntry.StatSheet.Record.Wins(),
-			oppEntry.StatSheet.Record.Losses(),
-			oppEntry.StatSheet.Record.Ties(),
+			oppEntry.Stats.Record.Wins(),
+			oppEntry.Stats.Record.Losses(),
+			oppEntry.Stats.Record.Ties(),
 		)
 
 		combinedOpponentRecord.Add(oppRecord)
@@ -228,12 +228,12 @@ func Ranking(entries []entry.Entry, stat string) map[string]int {
 	case pointsFor:
 		// Sort PointsFor in descending order
 		sortFunc = func(i, j int) bool {
-			return entries[i].StatSheet.Points.For > entries[j].StatSheet.Points.For
+			return entries[i].Stats.Points.For > entries[j].Stats.Points.For
 		}
 	case pointsAgainst:
 		// Sort PointsAgainst in ascending order
 		sortFunc = func(i, j int) bool {
-			return entries[i].StatSheet.Points.Against < entries[j].StatSheet.Points.Against
+			return entries[i].Stats.Points.Against < entries[j].Stats.Points.Against
 		}
 	}
 	sort.Slice(entries, sortFunc)
@@ -244,11 +244,11 @@ func Ranking(entries []entry.Entry, stat string) map[string]int {
 	for i, entry := range entries {
 		// If the given entry is different than the last, we can increase the rank
 		if stat == pointsFor {
-			if i > 0 && entry.StatSheet.Points.For != entries[i-1].StatSheet.Points.For {
+			if i > 0 && entry.Stats.Points.For != entries[i-1].Stats.Points.For {
 				rank = i + 1
 			}
 		} else {
-			if i > 0 && entry.StatSheet.Points.Against != entries[i-1].StatSheet.Points.Against {
+			if i > 0 && entry.Stats.Points.Against != entries[i-1].Stats.Points.Against {
 				rank = i + 1
 			}
 		}
