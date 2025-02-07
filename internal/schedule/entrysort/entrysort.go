@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"nfl-app/internal/entry"
 	"nfl-app/internal/schedule"
-	"nfl-app/internal/stats"
 	"sort"
 )
 
 // SortEntries will sort the given entries by win percentage, default to tiebreakers specified
 // in https://www.nfl.com/standings/tie-breaking-procedures
-func SortEntries(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) ([]entry.Entry, error) {
+func SortEntries(entries []entry.Entry, teamSchedules map[string]schedule.Schedule) ([]entry.Entry, error) {
 	if len(entries) < 2 {
 		return entries, nil
 	}
@@ -23,7 +22,7 @@ func SortEntries(entries []entry.Entry, teamSchedules map[string]*schedule.TeamS
 }
 
 // One general sort function for any sorter to use
-func (s *Sorter) Sort(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) []entry.Entry {
+func (s *Sorter) Sort(entries []entry.Entry, teamSchedules map[string]schedule.Schedule) []entry.Entry {
 	// Validate
 	if len(entries) < 2 {
 		return entries
@@ -64,12 +63,12 @@ func (s *Sorter) Sort(entries []entry.Entry, teamSchedules map[string]*schedule.
 		return TripleEliminationSort(entries, teamSchedules)
 	}
 
-	panic("Unknown tiebreak method: " + s.TiebreakMethod)
+	panic(fmt.Sprintf("Unknown tiebreak method %s for sorter %s", s.TiebreakMethod, s.Name))
 }
 
 // SubgroupSort is used specifically at the top level for win percentage.
 // It will split the entries into subgroups based on the sortBy value and sort each subgroup using the tiebreaker
-func (s *Sorter) SubgroupSort(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule, sortBy map[string]float64) []entry.Entry {
+func (s *Sorter) SubgroupSort(entries []entry.Entry, teamSchedules map[string]schedule.Schedule, sortBy map[string]float64) []entry.Entry {
 	var sortedEntries []entry.Entry
 	var sortedSubgroup []entry.Entry
 
@@ -96,7 +95,7 @@ func (s *Sorter) SubgroupSort(entries []entry.Entry, teamSchedules map[string]*s
 // When evaluating a group of teams, EliminationSort will attempt to isolate either the sole best or sole worst team in the group.
 // If one of those teams is identified, its spot will be locked in and all of the remaining teams will be sorted again, starting from the beginning.
 // If the sole worst/best is not found, the top group of tied entries will be sorted using the tiebreaker to find the sole best.
-func (s *Sorter) EliminationSort(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule, sortBy map[string]float64) []entry.Entry {
+func (s *Sorter) EliminationSort(entries []entry.Entry, teamSchedules map[string]schedule.Schedule, sortBy map[string]float64) []entry.Entry {
 	subgroups := entry.GroupEntries(entries, sortBy)
 	topGroup := subgroups[0]
 	bottomGroup := subgroups[len(subgroups)-1]
@@ -134,7 +133,7 @@ func (s *Sorter) EliminationSort(entries []entry.Entry, teamSchedules map[string
 
 // DoubleEliminationSort is EliminationSort, however we make sure to eliminate any team that is not the top ranked team in their division
 // before determining the sole best. Because of this, we neglect determining the sole worst team.
-func (s *Sorter) DoubleEliminationSort(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule, sortBy map[string]float64) []entry.Entry {
+func (s *Sorter) DoubleEliminationSort(entries []entry.Entry, teamSchedules map[string]schedule.Schedule, sortBy map[string]float64) []entry.Entry {
 	// Before eliminating the sole best or worst, we need to eliminate
 	// any team that is not the top ranked team in their division
 	divTop, divBottom := FindDivisionTopTeams(entries, teamSchedules)
@@ -189,7 +188,7 @@ func (s *Sorter) DoubleEliminationSort(entries []entry.Entry, teamSchedules map[
 // TODO: This is just an inverse of the process used to determine draft order.
 // It's not entirely accurate because the draft order adds an initial tiebreaker to all ties:
 // 3. If ties exist in any grouping, such ties shall be broken by figuring the aggregate won-lost-tied percentage of each involved club's regular-season opponents and awarding preferential selection order to the club that faced the schedule of teams with the lowest aggregate won-lost-tied percentage.
-func TripleEliminationSort(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) []entry.Entry {
+func TripleEliminationSort(entries []entry.Entry, teamSchedules map[string]schedule.Schedule) []entry.Entry {
 	// (ii) Ties involving THREE-OR-MORE clubs from different conferences will be broken by applying
 	// (a) divisional tiebreakers to determine the lowest-ranked team in a division
 	divisionGroups := entry.GroupByDivision(entries)
@@ -246,7 +245,7 @@ func TripleEliminationSort(entries []entry.Entry, teamSchedules map[string]*sche
 
 // FindDivisionTopTeams will return a subset of the original group of entries containing all the highest ranked teams
 // in each division, as well as a subset of the original group of entries containing all the other teams in each division
-func FindDivisionTopTeams(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) ([]entry.Entry, []entry.Entry) {
+func FindDivisionTopTeams(entries []entry.Entry, teamSchedules map[string]schedule.Schedule) ([]entry.Entry, []entry.Entry) {
 	top := make([]entry.Entry, 0)
 	other := make([]entry.Entry, 0)
 
@@ -282,7 +281,7 @@ func FindDivisionTopTeams(entries []entry.Entry, teamSchedules map[string]*sched
 
 // SeedEntries will sort the entries as they would be seeded in the playoffs
 // This means that the top team in each division is seeded 1-4, and the rest are seeded 5+
-func SeedEntries(entries []entry.Entry, ts map[string]*schedule.TeamSchedule) ([]entry.Entry, error) {
+func SeedEntries(entries []entry.Entry, ts map[string]schedule.Schedule) ([]entry.Entry, error) {
 	// Sort entries by win percentage
 	sortedEntries, err := SortEntries(entries, ts)
 	if err != nil {
@@ -298,48 +297,14 @@ func SeedEntries(entries []entry.Entry, ts map[string]*schedule.TeamSchedule) ([
 		// If we haven't seen the division yet, we know this is a division winner,
 		// so it assign it to the highest available seed in 1-4. Otherwise assign it to 5+
 		if _, ok := divisionsSeen[entry.Team.Division]; !ok {
-			entry.Stats[stats.StatPlayoffSeed].SetValue(float64(divSeed))
+			entry.StatSheet.Seed = divSeed
 			divSeed++
 			divisionsSeen[entry.Team.Division] = true
 		} else {
-			entry.Stats[stats.StatPlayoffSeed].SetValue(float64(wildSeed))
+			entry.StatSheet.Seed = wildSeed
 			wildSeed++
 		}
 	}
 
 	return sortedEntries, nil
 }
-
-// // Calculate seed
-// // Sort each conference by win pct (We should take tiebreakers into account https://www.nfl.com/standings/tie-breaking-procedures)
-// // Loop through teams, if team is from division we haven't seen, assign it to highest available seed in 1-4
-// // If team is from division we HAVE seen, assign it to highest available seed in 5+
-// func AssignPlayoffSeeds(s *standings.Standings, ts map[string]*schedule.TeamSchedule) {
-
-// 	for _, conf := range team.Conferences {
-// 		confEntries := s.ConferenceStandings[conf].Entries
-
-// 		sortedEntries, err := SortEntries(confEntries, ts)
-// 		if err != nil {
-// 			// TODO
-// 			log.Fatalf("Failed to sort entries: %v", err)
-// 		}
-
-// 		divisionSeedAvailable := 1
-// 		otherSeedAvailable := 5
-
-// 		divisionsSeen := make(map[string]bool)
-// 		for _, entry := range sortedEntries {
-// 			// If we haven't seen the division yet, we know this is a division winner,
-// 			// so it assign it to the highest available seed in 1-4. Otherwise assign it to 5+
-// 			if _, ok := divisionsSeen[entry.Team.Division]; !ok {
-// 				entry.Stats[stats.StatPlayoffSeed].SetValue(float64(divisionSeedAvailable))
-// 				divisionSeedAvailable++
-// 				divisionsSeen[entry.Team.Division] = true
-// 			} else {
-// 				entry.Stats[stats.StatPlayoffSeed].SetValue(float64(otherSeedAvailable))
-// 				otherSeedAvailable++
-// 			}
-// 		}
-// 	}
-// }

@@ -3,23 +3,22 @@ package entrysort
 import (
 	"nfl-app/internal/entry"
 	"nfl-app/internal/schedule"
-	"nfl-app/internal/stats"
 )
 
 // This file contains function to get the sortBy maps needed for sorting entries
 // Many are attainable from the entry itself, but some require the teamSchedules map (common games, h2h, etc)
 
-func WinPercentageMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
+func WinPercentageMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.TeamName()] = entry.OverallRecord().WinPercentage()
+		sortBy[entry.Team.Name.String()] = entry.StatSheet.Record.WinPercentage()
 	}
 
 	return sortBy
 }
 
-func HeadToHeadMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	headToHeadRecords := schedule.HeadToHeadRecords(entries, teamSchedules)
+func HeadToHeadMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	headToHeadRecords := schedule.HeadToHeadRecords(entries, ts)
 
 	sortBy := make(map[string]float64)
 	for team, record := range headToHeadRecords {
@@ -29,9 +28,8 @@ func HeadToHeadMap(entries []entry.Entry, teamSchedules map[string]*schedule.Tea
 	return sortBy
 }
 
-// "Sweep": Applicable only if one club has defeated each of the others or if one club has lost to each of the others.
-func HeadToHeadSweepMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	headToHeadRecords := schedule.HeadToHeadRecords(entries, teamSchedules)
+func HeadToHeadSweepMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	headToHeadRecords := schedule.HeadToHeadRecords(entries, ts)
 
 	sortBy := make(map[string]float64)
 	for team, record := range headToHeadRecords {
@@ -58,30 +56,24 @@ func HeadToHeadSweepMap(entries []entry.Entry, teamSchedules map[string]*schedul
 	return sortBy
 }
 
-func DivisionMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	divisionRecords := entry.DivisionRecords(entries)
-
+func DivisionMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
-	for team, record := range divisionRecords {
-		sortBy[team] = record.WinPercentage()
+	for _, entry := range entries {
+		sortBy[entry.Team.Name.String()] = entry.StatSheet.Record.WinPercentage()
 	}
-
 	return sortBy
 }
 
-func ConferenceMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	conferenceRecords := entry.ConferenceRecords(entries)
-
+func ConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
-	for team, record := range conferenceRecords {
-		sortBy[team] = record.WinPercentage()
+	for _, entry := range entries {
+		sortBy[entry.Team.Name.String()] = entry.StatSheet.ConferenceRecord.WinPercentage()
 	}
-
 	return sortBy
 }
 
-func CommonGamesMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	commonGamesRecords := schedule.CommonGamesRecords(entries, teamSchedules)
+func CommonGamesMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	commonGamesRecords := schedule.CommonGamesRecords(entries, ts)
 
 	sortBy := make(map[string]float64)
 	for team, record := range commonGamesRecords {
@@ -91,8 +83,8 @@ func CommonGamesMap(entries []entry.Entry, teamSchedules map[string]*schedule.Te
 	return sortBy
 }
 
-func CommonGamesMin4Map(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	commonGamesRecords := schedule.CommonGamesRecords(entries, teamSchedules)
+func CommonGamesMin4Map(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	commonGamesRecords := schedule.CommonGamesRecords(entries, ts)
 
 	sortBy := make(map[string]float64)
 	var minGamesPlayed = true
@@ -115,37 +107,35 @@ func CommonGamesMin4Map(entries []entry.Entry, teamSchedules map[string]*schedul
 	return sortBy
 }
 
-// Just return as is for now
-func CoinTossMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
+func CoinTossMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	coinTossMap := make(map[string]float64)
 	for i, entry := range entries {
-		coinTossMap[entry.TeamName()] = float64(i)
+		coinTossMap[entry.Team.Name.String()] = float64(i)
 	}
 	return coinTossMap
 }
 
-func NetPointsCommonMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
+func NetPointsCommonMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	var teams []string
 	for _, entry := range entries {
-		teams = append(teams, entry.TeamName())
+		teams = append(teams, entry.Team.Name.String())
 	}
 
-	commonOpponents := schedule.CommonOpponents(teams, teamSchedules)
+	commonOpponents := schedule.CommonOpponents(teams, ts)
 	commonGamesNet := make(map[string]float64)
 
 	for _, team := range teams {
 		teamNet := 0
-		opponentMap := teamSchedules[team].OpponentMap()
+		teamSchedule := ts[team]
+		opponentMap := teamSchedule.OpponentMapFor(team)
 
 		for _, opp := range commonOpponents {
 			games := opponentMap[opp]
 			for _, game := range games {
-				if game.Completed {
-					if game.HomeTeamName() == team {
-						teamNet += game.HomeScore - game.AwayScore
-					} else {
-						teamNet += game.AwayScore - game.HomeScore
-					}
+				if game.Winner == team {
+					teamNet += game.PtsWin - game.PtsLose
+				} else {
+					teamNet += game.PtsLose - game.PtsWin
 				}
 			}
 		}
@@ -155,71 +145,71 @@ func NetPointsCommonMap(entries []entry.Entry, teamSchedules map[string]*schedul
 	return commonGamesNet
 }
 
-func NetPointsMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	netPointsMap := make(map[string]float64)
-	for _, entry := range entries {
-		netPointsMap[entry.TeamName()] = entry.Stats[stats.StatPointDifferential].Value()
-	}
-
-	return netPointsMap
-}
-
-func NetPointsConferenceMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	netPointsConfMap := make(map[string]float64)
-	for _, entry := range entries {
-		netPointsConfMap[entry.TeamName()] = entry.Stats[stats.StatConferencePointDifferential].Value()
-	}
-
-	return netPointsConfMap
-}
-
-func StrengthOfVictoryMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	sovMap := make(map[string]float64)
-	for _, entry := range entries {
-		sovMap[entry.TeamName()] = entry.Stats[stats.StatStrengthOfVictory].Value()
-	}
-
-	return sovMap
-}
-
-func StrengthOfScheduleMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
-	sosMap := make(map[string]float64)
-	for _, entry := range entries {
-		sosMap[entry.TeamName()] = entry.Stats[stats.StatStrengthOfSchedule].Value()
-	}
-
-	return sosMap
-}
-
-func CombinedRankingConferenceMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
+func NetPointsMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
-
 	for _, entry := range entries {
-		// Calculate the combined ranking for the entry
-		pointsForRanking := entry.Stats[stats.ConferenceRankPointsFor].Value()
-		pointsAgainstRanking := entry.Stats[stats.ConferenceRankPointsAgainst].Value()
-
-		combinedRanking := pointsForRanking + pointsAgainstRanking
-
-		// We want to reward lower combined rankings, so multiply by -1 before adding to sortBy
-		sortBy[entry.TeamName()] = (combinedRanking * -1)
+		sortBy[entry.Team.Name.String()] = float64(entry.StatSheet.Points.Differential())
 	}
 
 	return sortBy
 }
 
-func CombinedRankingLeagueMap(entries []entry.Entry, teamSchedules map[string]*schedule.TeamSchedule) map[string]float64 {
+func NetPointsConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	sortBy := make(map[string]float64)
+	for _, entry := range entries {
+		sortBy[entry.Team.Name.String()] = float64(entry.StatSheet.ConferencePoints.Differential())
+	}
+
+	return sortBy
+}
+
+func StrengthOfVictoryMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	sovMap := make(map[string]float64)
+	for _, entry := range entries {
+		sovMap[entry.Team.Name.String()] = entry.StatSheet.StrengthOfVictory
+	}
+
+	return sovMap
+}
+
+func StrengthOfScheduleMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	sosMap := make(map[string]float64)
+	for _, entry := range entries {
+		sosMap[entry.Team.Name.String()] = entry.StatSheet.StrengthOfSchedule
+	}
+
+	return sosMap
+}
+
+func CombinedRankingConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 
 	for _, entry := range entries {
 		// Calculate the combined ranking for the entry
-		pointsForRanking := entry.Stats[stats.LeagueRankPointsFor].Value()
-		pointsAgainstRanking := entry.Stats[stats.LeagueRankPointsAgainst].Value()
+		pfRank := entry.StatSheet.ConferenceRankPointsFor
+		paRank := entry.StatSheet.ConferenceRankPointsAgainst
 
-		combinedRanking := pointsForRanking + pointsAgainstRanking
+		combinedRanking := pfRank + paRank
 
 		// We want to reward lower combined rankings, so multiply by -1 before adding to sortBy
-		sortBy[entry.TeamName()] = (combinedRanking * -1)
+		sortBy[entry.TeamName()] = float64(combinedRanking * -1)
+	}
+
+	return sortBy
+}
+
+func CombinedRankingLeagueMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
+	sortBy := make(map[string]float64)
+
+	for _, entry := range entries {
+		// Calculate the combined ranking for the entry
+		pfRank := entry.StatSheet.LeagueRankPointsFor
+		paRank := entry.StatSheet.LeagueRankPointsAgainst
+
+		combinedRanking := pfRank + paRank
+
+		// We want to reward lower combined rankings, so multiply by -1 before adding to sortBy
+		sortBy[entry.TeamName()] = float64(combinedRanking * -1)
 	}
 
 	return sortBy

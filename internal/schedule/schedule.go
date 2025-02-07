@@ -1,11 +1,7 @@
 package schedule
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 	"nfl-app/internal/entry"
 	"nfl-app/internal/game"
 	"nfl-app/internal/scraper"
@@ -13,51 +9,13 @@ import (
 	"strconv"
 )
 
-func GetESPNSchedule(teamId string) ESPNSchedule {
-	url := fmt.Sprintf("http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/%s/schedule", teamId)
-
-	// Send a GET request
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatalf("Failed to send request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Read the response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON into the struct
-	var schedule ESPNSchedule
-	if err := json.Unmarshal(body, &schedule); err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
-
-	return schedule
-}
-
-func EventToGame(event ESPNEvent) *game.Game {
-	competition := event.Competitions[0] // Usually only one competition per event
-	return &game.Game{
-		// TODO: Confirm home team is always Competitors[0]
-		HomeTeam:  team.DisplayNameToTeam(competition.Competitors[0].Team.DisplayName),
-		AwayTeam:  team.DisplayNameToTeam(competition.Competitors[1].Team.DisplayName),
-		HomeScore: int(competition.Competitors[0].Score.Value),
-		AwayScore: int(competition.Competitors[1].Score.Value),
-		Completed: competition.Status.Type.Completed,
-	}
-}
-
-// -------------------- New STUFF --------------------
 type Schedule struct {
 	Weeks []Week
 }
 
 type Week struct {
 	Number int
-	Games  []game.Game2
+	Games  []game.Game
 }
 
 // NewEmptySchedule creates a new empty schedule with 18 weeks
@@ -66,7 +24,7 @@ func NewEmptySchedule() Schedule {
 	for i := 0; i < 18; i++ {
 		weeks[i] = Week{
 			Number: i + 1,
-			Games:  make([]game.Game2, 0),
+			Games:  make([]game.Game, 0),
 		}
 	}
 
@@ -105,7 +63,7 @@ func CreateSchedule(rows []scraper.ScrapedRow) Schedule {
 		toLose, _ := strconv.Atoi(row.ToLose)
 
 		// Create the game
-		g := game.Game2{
+		g := game.Game{
 			Time:      t,
 			Winner:    row.Winner,
 			Loser:     row.Loser,
@@ -121,7 +79,7 @@ func CreateSchedule(rows []scraper.ScrapedRow) Schedule {
 
 		// Add the game to the week
 		if week.Games == nil {
-			week.Games = make([]game.Game2, 0)
+			week.Games = make([]game.Game, 0)
 		}
 		week.Games = append(week.Games, g)
 	}
@@ -160,32 +118,86 @@ func (s *Schedule) SplitToTeams() map[string]Schedule {
 	return teamSchedules
 }
 
-func CreateEntries(schedule Schedule) []entry.Entry2 {
+// OpponentMapFor returns a map of opponent names to games played against that opponent
+// for a given team
+func (s *Schedule) OpponentMapFor(teamName string) map[string][]game.Game {
+	// Need a string of games because teams will play division opponents twice
+	opponentMap := make(map[string][]game.Game)
+	for _, week := range s.Weeks {
+		for _, game := range week.Games {
+			if game.Home == teamName {
+				opponentMap[game.Away] = append(opponentMap[game.Away], game)
+			} else if game.Away == teamName {
+				opponentMap[game.Home] = append(opponentMap[game.Home], game)
+			}
+		}
+	}
+
+	return opponentMap
+}
+
+func CreateEntries(schedule Schedule) []entry.Entry {
 	// Create a map to track entries for each team
-	entries := make(map[string]entry.Entry2)
+	entryMap := make(map[string]entry.Entry)
 	for _, team := range team.NFLTeams {
 		teamname := team.Name.String()
-		entries[teamname] = *entry.NewEntry2(teamname)
+		entryMap[teamname] = *entry.NewEntry(teamname)
 	}
 
 	for _, week := range schedule.Weeks {
 		for _, game := range week.Games {
 			// Update the entries for each team
-			homeEntry := entries[game.Home]
-			awayEntry := entries[game.Away]
+			homeEntry := entryMap[game.Home]
+			awayEntry := entryMap[game.Away]
 
 			homeEntry.AddGame(game)
 			awayEntry.AddGame(game)
 
 			// Need to reassign, could make pointers instead?
-			entries[game.Home] = homeEntry
-			entries[game.Away] = awayEntry
+			entryMap[game.Home] = homeEntry
+			entryMap[game.Away] = awayEntry
 		}
 	}
 
-	out := make([]entry.Entry2, 0)
-	for _, entry := range entries {
-		out = append(out, entry)
+	// Now that the basic counting stats are in place,
+	// calculate the stats that depend on other teams
+
+	// Get slice of entries
+	entries := make([]entry.Entry, 0)
+	for _, entry := range entryMap {
+		entries = append(entries, entry)
 	}
-	return out
+
+	teamSchedules := schedule.SplitToTeams()
+
+	// SOV and SOS
+	for i, entry := range entries {
+		sov := StrengthOfVictory(entry.TeamName(), entries, teamSchedules)
+		sos := StrengthOfSchedule(entry.TeamName(), entries, teamSchedules)
+		entry.StatSheet.StrengthOfVictory = sov
+		entry.StatSheet.StrengthOfSchedule = sos
+
+		// TODO: Use pointer to avoid this?
+		entries[i] = entry
+	}
+
+	// Combined ranking among conference teams in points scored and points allowed
+	leagueRankPointsFor := Ranking(entries, pointsFor)
+	leagueRankPointsAgainst := Ranking(entries, pointsAgainst)
+
+	for _, conference := range team.Conferences {
+		conferenceEntries := entry.ConferenceEntries(entries, conference)
+		conferenceRankPointsFor := Ranking(conferenceEntries, pointsFor)
+		conferenceRankPointsAgainst := Ranking(conferenceEntries, pointsAgainst)
+
+		for _, entry := range conferenceEntries {
+			entry.StatSheet.LeagueRankPointsFor = leagueRankPointsFor[entry.TeamName()]
+			entry.StatSheet.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.TeamName()]
+
+			entry.StatSheet.ConferenceRankPointsFor = conferenceRankPointsFor[entry.TeamName()]
+			entry.StatSheet.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.TeamName()]
+		}
+	}
+
+	return entries
 }

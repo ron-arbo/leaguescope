@@ -11,7 +11,7 @@ type Sorter struct {
 	Name string
 
 	// SortByMap is a function that will return a map of team names to a value that this Sorter will sort by
-	SortByMap func([]entry.Entry, map[string]*schedule.TeamSchedule) map[string]float64
+	SortByMap func([]entry.Entry, map[string]schedule.Schedule) map[string]float64
 
 	// Tiebreaker is the next Sorter to use if there are ties
 	Tiebreaker *Sorter

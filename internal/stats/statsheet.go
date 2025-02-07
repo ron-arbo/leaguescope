@@ -2,23 +2,25 @@ package stats
 
 type StatSheet struct {
 	// Records
-	Record Record
-	HomeRecord Record
-	AwayRecord Record
-	DivisionRecord Record
+	Record           Record
+	HomeRecord       Record
+	AwayRecord       Record
+	DivisionRecord   Record
 	ConferenceRecord Record
 
 	// Points
-	Points Points
+	Points           Points
 	ConferencePoints Points
 
 	// Strength Of
-	StrengthOfVictory float64
-	strengthOfSchedule  float64
+	StrengthOfVictory  float64
+	StrengthOfSchedule float64
 
 	// Rank
-	ConferenceRankPoints int
-	LeagueRankPoints     int
+	ConferenceRankPointsFor     int
+	ConferenceRankPointsAgainst int
+	LeagueRankPointsFor         int
+	LeagueRankPointsAgainst     int
 
 	Streak int
 
@@ -27,6 +29,6 @@ type StatSheet struct {
 	// TODO: Clincher
 }
 
-func NewStatSheet() StatSheet{
+func NewStatSheet() StatSheet {
 	return StatSheet{}
 }

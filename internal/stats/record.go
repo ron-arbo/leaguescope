@@ -1,9 +1,5 @@
 package stats
 
-import (
-	"nfl-app/internal/game"
-)
-
 // TODO: Make this type private, access everything through functions?
 // TODO: Can we eventually have the stat.Stats reference this directly? Rather than 3 separate fields?
 type Record struct {
@@ -18,6 +14,18 @@ func NewRecord(wins, losses, ties int) *Record {
 		losses: losses,
 		ties:   ties,
 	}
+}
+
+func (r *Record) Wins() int {
+	return r.wins
+}
+
+func (r *Record) Losses() int {
+	return r.losses
+}
+
+func (r *Record) Ties() int {
+	return r.ties
 }
 
 func (r *Record) AddWin() {
@@ -51,19 +59,4 @@ func (r *Record) WinPercentage() float64 {
 
 func (r *Record) GamesPlayed() int {
 	return r.wins + r.losses + r.ties
-}
-
-func (r *Record) UpdateFor(team string, g *game.Game) {
-	if !g.Completed {
-		return
-	}
-
-	switch {
-	case g.Tied():
-		r.AddTie()
-	case g.WonBy(team):
-		r.AddWin()
-	default:
-		r.AddLoss()
-	}
 }
