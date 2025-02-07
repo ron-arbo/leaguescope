@@ -9,10 +9,16 @@ import (
 )
 
 const (
+	// Used in general Ranking()
 	pointsFor     = "pointsFor"
 	pointsAgainst = "pointsAgainst"
+
+	// Used in general StrengthOf()
+	strengthOfVictory  = "victory"
+	strengthOfSchedule = "schedule"
 )
 
+// CommonOpponents returns a slice of team names containing the common opponents for the given teams
 func CommonOpponents(teams []string, ts map[string]Schedule) []string {
 	if len(teams) < 2 {
 		// TODO
@@ -53,11 +59,12 @@ func CommonOpponents(teams []string, ts map[string]Schedule) []string {
 	return commonOpps
 }
 
+// CommonGamesRecords returns a map of team names to their Record in common games with respect to the other teams in the given entries
 func CommonGamesRecords(entries []entry.Entry, ts map[string]Schedule) map[string]*entry.Record {
 	// Create slice of names
 	var teamNames []string
 	for _, entry := range entries {
-		teamNames = append(teamNames, entry.Team.Name.String())
+		teamNames = append(teamNames, entry.Team.Name)
 	}
 
 	commonOpps := CommonOpponents(teamNames, ts)
@@ -87,11 +94,12 @@ func CommonGamesRecords(entries []entry.Entry, ts map[string]Schedule) map[strin
 	return commonGamesRecord
 }
 
+// HeadToHeadGames returns a slice that contains all head to head games amongst the given entries
 func HeadToHeadGames(entries []entry.Entry, ts map[string]Schedule) []game.Game {
 	// Create slice of team names
 	teamNames := make([]string, len(entries))
 	for i, team := range entries {
-		teamNames[i] = team.Team.Name.String()
+		teamNames[i] = team.Team.Name
 	}
 
 	// Find all games between these teams
@@ -132,7 +140,7 @@ func HeadToHeadRecords(entries []entry.Entry, ts map[string]Schedule) map[string
 
 	// Initialize record for each team
 	for _, ent := range entries {
-		h2hRecords[ent.Team.Name.String()] = &entry.Record{}
+		h2hRecords[ent.Team.Name] = &entry.Record{}
 	}
 
 	for _, game := range h2hGames {
@@ -156,11 +164,6 @@ func HeadToHeadRecords(entries []entry.Entry, ts map[string]Schedule) map[string
 	return h2hRecords
 }
 
-const (
-	strengthOfVictory  = "victory"
-	strengthOfSchedule = "schedule"
-)
-
 func StrengthOfVictory(team string, entries []entry.Entry, ts map[string]Schedule) float64 {
 	return StrengthOf(team, entries, ts, strengthOfVictory)
 }
@@ -179,7 +182,7 @@ func StrengthOf(team string, entries []entry.Entry, ts map[string]Schedule, attr
 	// Create map of team names to Entry for convenience
 	teamMap := make(map[string]entry.Entry)
 	for _, entry := range entries {
-		teamMap[entry.Team.Name.String()] = entry
+		teamMap[entry.Team.Name] = entry
 	}
 
 	schedule := ts[team]
@@ -252,7 +255,7 @@ func Ranking(entries []entry.Entry, stat string) map[string]int {
 				rank = i + 1
 			}
 		}
-		ranking[entry.TeamName()] = rank
+		ranking[entry.Team.Name] = rank
 	}
 
 	return ranking

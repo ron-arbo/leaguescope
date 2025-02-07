@@ -24,7 +24,7 @@ func ConferenceEntries(entries []Entry, conference string) []Entry {
 }
 
 func (e *Entry) TeamName() string {
-	return e.Team.Name.String()
+	return e.Team.Name
 }
 
 func (e *Entry) AddGame(game game.Game) {
@@ -37,13 +37,12 @@ func (e *Entry) AddGame(game game.Game) {
 	// Streak
 	e.UpdateStreak(game)
 
-	// Certain stats cannot be calculated from one game, they are dependent on the entire schedule
-	// Strength of Victory, Strength of Schedule, Clincher, etc
-	// Calculate these later
+	// Certain stats (Strength of Victory, Strength of Schedule, Clincher, etc) cannot be calculated from one game,
+	// they are dependent on the entire schedule. Calculate these later
 }
 
 func (e *Entry) UpdateRecords(game game.Game) {
-	teamname := e.Team.Name.String()
+	teamname := e.Team.Name
 
 	switch {
 	case game.Winner == teamname:
@@ -91,7 +90,7 @@ func (e *Entry) UpdateRecords(game game.Game) {
 
 func (e *Entry) UpdatePoints(game game.Game) {
 	switch {
-	case game.Winner == e.Team.Name.String():
+	case game.Winner == e.Team.Name:
 		// Overall
 		e.Stats.Points.AddFor(game.PtsWin)
 		e.Stats.Points.AddAgainst(game.PtsLose)
@@ -101,7 +100,7 @@ func (e *Entry) UpdatePoints(game game.Game) {
 			e.Stats.ConferencePoints.AddFor(game.PtsWin)
 			e.Stats.ConferencePoints.AddAgainst(game.PtsLose)
 		}
-	case game.Loser == e.Team.Name.String():
+	case game.Loser == e.Team.Name:
 		// Overall
 		e.Stats.Points.AddFor(game.PtsLose)
 		e.Stats.Points.AddAgainst(game.PtsWin)
@@ -116,13 +115,13 @@ func (e *Entry) UpdatePoints(game game.Game) {
 
 func (e *Entry) UpdateStreak(game game.Game) {
 	switch {
-	case game.Winner == e.Team.Name.String():
+	case game.Winner == e.Team.Name:
 		if e.Stats.Streak > 0 {
 			e.Stats.Streak++
 		} else {
 			e.Stats.Streak = 1
 		}
-	case game.Loser == e.Team.Name.String():
+	case game.Loser == e.Team.Name:
 		if e.Stats.Streak < 0 {
 			e.Stats.Streak--
 		} else {
@@ -167,23 +166,23 @@ func GroupEntries(entries []Entry, sortBy map[string]float64) [][]Entry {
 
 	// Sort the entries in descending order using sortBy
 	sort.Slice(entries, func(i, j int) bool {
-		return sortBy[entries[i].Team.Name.String()] > sortBy[entries[j].Team.Name.String()]
+		return sortBy[entries[i].Team.Name] > sortBy[entries[j].Team.Name]
 	})
 
 	// Initialize with the first entry
-	curValue := sortBy[entries[0].Team.Name.String()]
+	curValue := sortBy[entries[0].Team.Name]
 	curSlice := []Entry{entries[0]}
 
 	for i := 1; i < len(entries); i++ {
 		// If the current value is the same as the previous, add the entry to the current slice
-		if sortBy[entries[i].Team.Name.String()] == curValue {
+		if sortBy[entries[i].Team.Name] == curValue {
 			curSlice = append(curSlice, entries[i])
 		} else {
 			// New value hit, add the current slice to the output and create a new one with the current entry
 			out = append(out, curSlice)
 
 			// Start a new slice
-			curValue = sortBy[entries[i].Team.Name.String()]
+			curValue = sortBy[entries[i].Team.Name]
 			curSlice = []Entry{entries[i]}
 		}
 	}
@@ -197,7 +196,7 @@ func GroupEntries(entries []Entry, sortBy map[string]float64) [][]Entry {
 func Teams(entries []Entry) string {
 	out := make([]string, 0)
 	for _, entry := range entries {
-		out = append(out, entry.TeamName())
+		out = append(out, entry.Team.Name)
 	}
 	return strings.Join(out, ", ")
 }

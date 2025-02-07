@@ -30,7 +30,7 @@ func main() {
 
 	fmt.Println("Before")
 	for _, e := range afcEntries {
-		fmt.Println(e.Team.Name.String())
+		fmt.Println(e.Team.Name)
 	}
 
 	sortedEntries, err := entrysort.SortEntries(afcEntries, ts)
@@ -39,6 +39,6 @@ func main() {
 	}
 	fmt.Println("After")
 	for _, e := range sortedEntries {
-		fmt.Println(e.Team.Name.String())
+		fmt.Println(e.Team.Name)
 	}
 }

@@ -39,7 +39,7 @@ func (s *Sorter) Sort(entries []entry.Entry, teamSchedules map[string]schedule.S
 
 	// Sort the entries in descending order using sortBy
 	sort.Slice(entries, func(i, j int) bool {
-		return sortBy[entries[i].TeamName()] > sortBy[entries[j].TeamName()]
+		return sortBy[entries[i].Team.Name] > sortBy[entries[j].Team.Name]
 	})
 
 	// Now, figure out how we want to handle ties

@@ -1,6 +1,5 @@
 package stats
 
-// TODO: Make this type private, access everything through functions?
 type Record struct {
 	wins   int
 	losses int

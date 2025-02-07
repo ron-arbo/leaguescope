@@ -58,7 +58,6 @@ func GetSorterFor(entries []entry.Entry) (*Sorter, error) {
 		return nil, fmt.Errorf("invalid number of conferences/divisions in entries: %v", entries)
 	}
 
-	// TODO: Test this
 	if len(conferenceSeen) == 2 {
 		if len(entries) == 2 {
 			return WithinLeagueTwoClubsSorter(), nil

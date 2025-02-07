@@ -11,7 +11,7 @@ import (
 func WinPercentageMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name.String()] = entry.Stats.Record.WinPercentage()
+		sortBy[entry.Team.Name] = entry.Stats.Record.WinPercentage()
 	}
 
 	return sortBy
@@ -59,7 +59,7 @@ func HeadToHeadSweepMap(entries []entry.Entry, ts map[string]schedule.Schedule) 
 func DivisionMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name.String()] = entry.Stats.Record.WinPercentage()
+		sortBy[entry.Team.Name] = entry.Stats.Record.WinPercentage()
 	}
 	return sortBy
 }
@@ -67,7 +67,7 @@ func DivisionMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[str
 func ConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name.String()] = entry.Stats.ConferenceRecord.WinPercentage()
+		sortBy[entry.Team.Name] = entry.Stats.ConferenceRecord.WinPercentage()
 	}
 	return sortBy
 }
@@ -110,7 +110,7 @@ func CommonGamesMin4Map(entries []entry.Entry, ts map[string]schedule.Schedule) 
 func CoinTossMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	coinTossMap := make(map[string]float64)
 	for i, entry := range entries {
-		coinTossMap[entry.Team.Name.String()] = float64(i)
+		coinTossMap[entry.Team.Name] = float64(i)
 	}
 	return coinTossMap
 }
@@ -118,7 +118,7 @@ func CoinTossMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[str
 func NetPointsCommonMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	var teams []string
 	for _, entry := range entries {
-		teams = append(teams, entry.Team.Name.String())
+		teams = append(teams, entry.Team.Name)
 	}
 
 	commonOpponents := schedule.CommonOpponents(teams, ts)
@@ -148,7 +148,7 @@ func NetPointsCommonMap(entries []entry.Entry, ts map[string]schedule.Schedule) 
 func NetPointsMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name.String()] = float64(entry.Stats.Points.Differential())
+		sortBy[entry.Team.Name] = float64(entry.Stats.Points.Differential())
 	}
 
 	return sortBy
@@ -157,7 +157,7 @@ func NetPointsMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[st
 func NetPointsConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name.String()] = float64(entry.Stats.ConferencePoints.Differential())
+		sortBy[entry.Team.Name] = float64(entry.Stats.ConferencePoints.Differential())
 	}
 
 	return sortBy
@@ -166,7 +166,7 @@ func NetPointsConferenceMap(entries []entry.Entry, ts map[string]schedule.Schedu
 func StrengthOfVictoryMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sovMap := make(map[string]float64)
 	for _, entry := range entries {
-		sovMap[entry.Team.Name.String()] = entry.Stats.StrengthOfVictory
+		sovMap[entry.Team.Name] = entry.Stats.StrengthOfVictory
 	}
 
 	return sovMap
@@ -175,7 +175,7 @@ func StrengthOfVictoryMap(entries []entry.Entry, ts map[string]schedule.Schedule
 func StrengthOfScheduleMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sosMap := make(map[string]float64)
 	for _, entry := range entries {
-		sosMap[entry.Team.Name.String()] = entry.Stats.StrengthOfSchedule
+		sosMap[entry.Team.Name] = entry.Stats.StrengthOfSchedule
 	}
 
 	return sosMap
@@ -192,7 +192,7 @@ func CombinedRankingConferenceMap(entries []entry.Entry, ts map[string]schedule.
 		combinedRanking := pfRank + paRank
 
 		// We want to reward lower combined rankings, so multiply by -1 before adding to sortBy
-		sortBy[entry.TeamName()] = float64(combinedRanking * -1)
+		sortBy[entry.Team.Name] = float64(combinedRanking * -1)
 	}
 
 	return sortBy
@@ -209,7 +209,7 @@ func CombinedRankingLeagueMap(entries []entry.Entry, ts map[string]schedule.Sche
 		combinedRanking := pfRank + paRank
 
 		// We want to reward lower combined rankings, so multiply by -1 before adding to sortBy
-		sortBy[entry.TeamName()] = float64(combinedRanking * -1)
+		sortBy[entry.Team.Name] = float64(combinedRanking * -1)
 	}
 
 	return sortBy

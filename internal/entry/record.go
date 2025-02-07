@@ -1,7 +1,5 @@
 package entry
 
-// TODO: Make this type private, access everything through functions?
-// TODO: Can we eventually have the stat.Stats reference this directly? Rather than 3 separate fields?
 type Record struct {
 	wins   int
 	losses int

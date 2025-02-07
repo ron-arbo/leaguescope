@@ -101,7 +101,7 @@ func (s *Schedule) SplitToTeams() map[string]Schedule {
 	// Initialize the map
 	teamSchedules := make(map[string]Schedule)
 	for _, team := range team.NFLTeams {
-		teamSchedules[team.Name.String()] = NewEmptySchedule()
+		teamSchedules[team.Name] = NewEmptySchedule()
 	}
 
 	for i, week := range s.Weeks {
@@ -140,8 +140,7 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 	// Create a map to track entries for each team
 	entryMap := make(map[string]entry.Entry)
 	for _, team := range team.NFLTeams {
-		teamname := team.Name.String()
-		entryMap[teamname] = *entry.NewEntry(teamname)
+		entryMap[team.Name] = *entry.NewEntry(team.Name)
 	}
 
 	for _, week := range schedule.Weeks {
@@ -172,8 +171,8 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 
 	// SOV and SOS
 	for i, entry := range entries {
-		sov := StrengthOfVictory(entry.TeamName(), entries, teamSchedules)
-		sos := StrengthOfSchedule(entry.TeamName(), entries, teamSchedules)
+		sov := StrengthOfVictory(entry.Team.Name, entries, teamSchedules)
+		sos := StrengthOfSchedule(entry.Team.Name, entries, teamSchedules)
 		entry.Stats.StrengthOfVictory = sov
 		entry.Stats.StrengthOfSchedule = sos
 
@@ -191,11 +190,11 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 		conferenceRankPointsAgainst := Ranking(conferenceEntries, pointsAgainst)
 
 		for _, entry := range conferenceEntries {
-			entry.Stats.LeagueRankPointsFor = leagueRankPointsFor[entry.TeamName()]
-			entry.Stats.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.TeamName()]
+			entry.Stats.LeagueRankPointsFor = leagueRankPointsFor[entry.Team.Name]
+			entry.Stats.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.Team.Name]
 
-			entry.Stats.ConferenceRankPointsFor = conferenceRankPointsFor[entry.TeamName()]
-			entry.Stats.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.TeamName()]
+			entry.Stats.ConferenceRankPointsFor = conferenceRankPointsFor[entry.Team.Name]
+			entry.Stats.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.Team.Name]
 		}
 	}
 

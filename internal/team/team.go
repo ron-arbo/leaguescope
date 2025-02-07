@@ -1,7 +1,6 @@
 package team
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -24,193 +23,193 @@ const (
 // Definitions for all teams, divisons, and conferences
 var (
 	NewEnglandPatriots = Team{
-		Name:       TeamName{"New England", "Patriots"},
+		Name:       "New England Patriots",
 		Conference: AFC,
 		Division:   AFCEast,
 	}
 
 	NewYorkJets = Team{
-		Name:       TeamName{"New York", "Jets"},
+		Name:       "New York Jets",
 		Conference: AFC,
 		Division:   AFCEast,
 	}
 
 	BuffaloBills = Team{
-		Name:       TeamName{"Buffalo", "Bills"},
+		Name:       "Buffalo Bills",
 		Conference: AFC,
 		Division:   AFCEast,
 	}
 
 	MiamiDolphins = Team{
-		Name:       TeamName{"Miami", "Dolphins"},
+		Name:       "Miami Dolphins",
 		Conference: AFC,
 		Division:   AFCEast,
 	}
 
 	PittsburghSteelers = Team{
-		Name:       TeamName{"Pittsburgh", "Steelers"},
+		Name:       "Pittsburgh Steelers",
 		Conference: AFC,
 		Division:   AFCNorth,
 	}
 
 	BaltimoreRavens = Team{
-		Name:       TeamName{"Baltimore", "Ravens"},
+		Name:       "Baltimore Ravens",
 		Conference: AFC,
 		Division:   AFCNorth,
 	}
 
 	ClevelandBrowns = Team{
-		Name:       TeamName{"Cleveland", "Browns"},
+		Name:       "Cleveland Browns",
 		Conference: AFC,
 		Division:   AFCNorth,
 	}
 
 	CincinnatiBengals = Team{
-		Name:       TeamName{"Cincinnati", "Bengals"},
+		Name:       "Cincinnati Bengals",
 		Conference: AFC,
 		Division:   AFCNorth,
 	}
 
 	TennesseeTitans = Team{
-		Name:       TeamName{"Tennessee", "Titans"},
+		Name:       "Tennessee Titans",
 		Conference: AFC,
 		Division:   AFCSouth,
 	}
 
 	IndianapolisColts = Team{
-		Name:       TeamName{"Indianapolis", "Colts"},
+		Name:       "Indianapolis Colts",
 		Conference: AFC,
 		Division:   AFCSouth,
 	}
 
 	JacksonvilleJaguars = Team{
-		Name:       TeamName{"Jacksonville", "Jaguars"},
+		Name:       "Jacksonville Jaguars",
 		Conference: AFC,
 		Division:   AFCSouth,
 	}
 
 	HoustonTexans = Team{
-		Name:       TeamName{"Houston", "Texans"},
+		Name:       "Houston Texans",
 		Conference: AFC,
 		Division:   AFCSouth,
 	}
 
 	KansasCityChiefs = Team{
-		Name:       TeamName{"Kansas City", "Chiefs"},
+		Name:       "Kansas City Chiefs",
 		Conference: AFC,
 		Division:   AFCWest,
 	}
 
 	LasVegasRaiders = Team{
-		Name:       TeamName{"Las Vegas", "Raiders"},
+		Name:       "Las Vegas Raiders",
 		Conference: AFC,
 		Division:   AFCWest,
 	}
 
 	LosAngelesChargers = Team{
-		Name:       TeamName{"Los Angeles", "Chargers"},
+		Name:       "Los Angeles Chargers",
 		Conference: AFC,
 		Division:   AFCWest,
 	}
 
 	DenverBroncos = Team{
-		Name:       TeamName{"Denver", "Broncos"},
+		Name:       "Denver Broncos",
 		Conference: AFC,
 		Division:   AFCWest,
 	}
 
 	DallasCowboys = Team{
-		Name:       TeamName{"Dallas", "Cowboys"},
+		Name:       "Dallas Cowboys",
 		Conference: NFC,
 		Division:   NFCEast,
 	}
 
 	NewYorkGiants = Team{
-		Name:       TeamName{"New York", "Giants"},
+		Name:       "New York Giants",
 		Conference: NFC,
 		Division:   NFCEast,
 	}
 
 	PhiladelphiaEagles = Team{
-		Name:       TeamName{"Philadelphia", "Eagles"},
+		Name:       "Philadelphia Eagles",
 		Conference: NFC,
 		Division:   NFCEast,
 	}
 
 	WashingtonCommanders = Team{
-		Name:       TeamName{"Washington", "Commanders"},
+		Name:       "Washington Commanders",
 		Conference: NFC,
 		Division:   NFCEast,
 	}
 
 	GreenBayPackers = Team{
-		Name:       TeamName{"Green Bay", "Packers"},
+		Name:       "Green Bay Packers",
 		Conference: NFC,
 		Division:   NFCNorth,
 	}
 
 	MinnesotaVikings = Team{
-		Name:       TeamName{"Minnesota", "Vikings"},
+		Name:       "Minnesota Vikings",
 		Conference: NFC,
 		Division:   NFCNorth,
 	}
 
 	ChicagoBears = Team{
-		Name:       TeamName{"Chicago", "Bears"},
+		Name:       "Chicago Bears",
 		Conference: NFC,
 		Division:   NFCNorth,
 	}
 
 	DetroitLions = Team{
-		Name:       TeamName{"Detroit", "Lions"},
+		Name:       "Detroit Lions",
 		Conference: NFC,
 		Division:   NFCNorth,
 	}
 
 	TampaBayBuccaneers = Team{
-		Name:       TeamName{"Tampa Bay", "Buccaneers"},
+		Name:       "Tampa Bay Buccaneers",
 		Conference: NFC,
 		Division:   NFCSouth,
 	}
 
 	NewOrleansSaints = Team{
-		Name:       TeamName{"New Orleans", "Saints"},
+		Name:       "New Orleans Saints",
 		Conference: NFC,
 		Division:   NFCSouth,
 	}
 
 	CarolinaPanthers = Team{
-		Name:       TeamName{"Carolina", "Panthers"},
+		Name:       "Carolina Panthers",
 		Conference: NFC,
 		Division:   NFCSouth,
 	}
 
 	AtlantaFalcons = Team{
-		Name:       TeamName{"Atlanta", "Falcons"},
+		Name:       "Atlanta Falcons",
 		Conference: NFC,
 		Division:   NFCSouth,
 	}
 
 	LosAngelesRams = Team{
-		Name:       TeamName{"Los Angeles", "Rams"},
+		Name:       "Los Angeles Rams",
 		Conference: NFC,
 		Division:   NFCWest,
 	}
 
 	SanFrancisco49ers = Team{
-		Name:       TeamName{"San Francisco", "49ers"},
+		Name:       "San Francisco 49ers",
 		Conference: NFC,
 		Division:   NFCWest,
 	}
 
 	SeattleSeahawks = Team{
-		Name:       TeamName{"Seattle", "Seahawks"},
+		Name:       "Seattle eahawks",
 		Conference: NFC,
 		Division:   NFCWest,
 	}
 
 	ArizonaCardinals = Team{
-		Name:       TeamName{"Arizona", "Cardinals"},
+		Name:       "Arizona Cardinals",
 		Conference: NFC,
 		Division:   NFCWest,
 	}
@@ -304,10 +303,6 @@ func DisplayNameToTeam(displayName string) Team {
 	default:
 		return Team{}
 	}
-}
-
-func (tn TeamName) String() string {
-	return fmt.Sprintf("%s %s", tn.Location, tn.Name)
 }
 
 func SameDivision(t1, t2 string) bool {
