@@ -9,17 +9,20 @@ import (
 	"strconv"
 )
 
+// Schedule represents an NFL schedule for one or more teams
 type Schedule struct {
 	Weeks []Week
 }
 
+// Week represent an NFL week from the prespective of one or more teams
+// Games will contain multiple games if from the prespective of multiple teams
 type Week struct {
 	Number int
 	Games  []game.Game
 }
 
-// NewEmptySchedule creates a new empty schedule with 18 weeks
-func NewEmptySchedule() Schedule {
+// NewSchedule creates a new empty schedule with 18 weeks
+func NewSchedule() Schedule {
 	weeks := make([]Week, 18)
 	for i := 0; i < 18; i++ {
 		weeks[i] = Week{
@@ -31,6 +34,12 @@ func NewEmptySchedule() Schedule {
 	return Schedule{
 		Weeks: weeks,
 	}
+}
+
+// AddGame will "append" a game to a schedule, adding it to
+// the first week with an empty Games slice
+func (s *Schedule) AddGame(week int, game game.Game) {
+	s.Weeks[week-1].Games = append(s.Weeks[week-1].Games, game)
 }
 
 func CreateSchedule(rows []scraper.ScrapedRow) Schedule {
@@ -82,6 +91,7 @@ func CreateSchedule(rows []scraper.ScrapedRow) Schedule {
 			week.Games = make([]game.Game, 0)
 		}
 		week.Games = append(week.Games, g)
+		week.Number = weekNum // TODO: Don't need to do this every loop, but it works
 	}
 
 	return Schedule{Weeks: weeks}
@@ -101,7 +111,7 @@ func (s *Schedule) SplitToTeams() map[string]Schedule {
 	// Initialize the map
 	teamSchedules := make(map[string]Schedule)
 	for _, team := range team.NFLTeams {
-		teamSchedules[team.Name] = NewEmptySchedule()
+		teamSchedules[team.Name] = NewSchedule()
 	}
 
 	for i, week := range s.Weeks {
@@ -118,61 +128,62 @@ func (s *Schedule) SplitToTeams() map[string]Schedule {
 	return teamSchedules
 }
 
-// OpponentMapFor returns a map of opponent names to games played against that opponent
-// for a given team
-func (s *Schedule) OpponentMapFor(teamName string) map[string][]game.Game {
+// OpponentMapFor returns a map of opponent names to games played against that opponent for a given team
+func (s *Schedule) OpponentMapFor(team string) map[string][]game.Game {
 	// Need a string of games because teams will play division opponents twice
-	opponentMap := make(map[string][]game.Game)
+	oppMap := make(map[string][]game.Game)
 	for _, week := range s.Weeks {
 		for _, game := range week.Games {
-			if game.Home == teamName {
-				opponentMap[game.Away] = append(opponentMap[game.Away], game)
-			} else if game.Away == teamName {
-				opponentMap[game.Home] = append(opponentMap[game.Home], game)
+			if game.Home == team {
+				oppMap[game.Away] = append(oppMap[game.Away], game)
+			} else if game.Away == team {
+				oppMap[game.Home] = append(oppMap[game.Home], game)
 			}
 		}
 	}
 
-	return opponentMap
+	return oppMap
 }
 
+// CreateEntries will create a slice of entries representing the given schedule
+// Note that this slice is not guaranteed to contain an entry for every team, only
+// those teams in involved in the given schedule
 func CreateEntries(schedule Schedule) []entry.Entry {
 	// Create a map to track entries for each team
-	entryMap := make(map[string]entry.Entry)
-	for _, team := range team.NFLTeams {
-		entryMap[team.Name] = *entry.NewEntry(team.Name)
-	}
+	// Use pointer to entry so we can update in place without re-assigning to map
+	entryMap := make(map[string]*entry.Entry)
 
 	for _, week := range schedule.Weeks {
 		for _, game := range week.Games {
+			// Intialize entry in map if needed
+			if entryMap[game.Home] == nil {
+				entryMap[game.Home] = entry.NewEntry(game.Home)
+			}
+			if entryMap[game.Away] == nil {
+				entryMap[game.Away] = entry.NewEntry(game.Away)
+			}
+
 			// Update the entries for each team
-			homeEntry := entryMap[game.Home]
-			awayEntry := entryMap[game.Away]
-
-			homeEntry.AddGame(game)
-			awayEntry.AddGame(game)
-
-			// Need to reassign, could make pointers instead?
-			entryMap[game.Home] = homeEntry
-			entryMap[game.Away] = awayEntry
+			entryMap[game.Home].AddGame(game)
+			entryMap[game.Away].AddGame(game)
 		}
 	}
 
-	// Now that the basic counting stats are in place,
-	// calculate the stats that depend on other teams
+	// Now that the basic counting stats are in place, calculate the stats that depend on other teams
+	// To do this, split the schedule into individual team schedules
+	teamSchedules := schedule.SplitToTeams()
 
 	// Get slice of entries
 	entries := make([]entry.Entry, 0)
 	for _, entry := range entryMap {
-		entries = append(entries, entry)
+		entries = append(entries, *entry)
 	}
-
-	teamSchedules := schedule.SplitToTeams()
 
 	// SOV and SOS
 	for i, entry := range entries {
 		sov := StrengthOfVictory(entry.Team.Name, entries, teamSchedules)
 		sos := StrengthOfSchedule(entry.Team.Name, entries, teamSchedules)
+
 		entry.Stats.StrengthOfVictory = sov
 		entry.Stats.StrengthOfSchedule = sos
 
@@ -181,20 +192,20 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 	}
 
 	// Combined ranking among conference teams in points scored and points allowed
-	leagueRankPointsFor := Ranking(entries, pointsFor)
-	leagueRankPointsAgainst := Ranking(entries, pointsAgainst)
+	leagueRankPf := Ranking(entries, pointsFor)
+	leagueRankPa := Ranking(entries, pointsAgainst)
 
-	for _, conference := range team.Conferences {
-		conferenceEntries := entry.ConferenceEntries(entries, conference)
-		conferenceRankPointsFor := Ranking(conferenceEntries, pointsFor)
-		conferenceRankPointsAgainst := Ranking(conferenceEntries, pointsAgainst)
+	for _, conf := range team.Conferences {
+		confEntries := entry.ConferenceEntries(entries, conf)
+		confRankPf := Ranking(confEntries, pointsFor)
+		confRankPa := Ranking(confEntries, pointsAgainst)
 
-		for _, entry := range conferenceEntries {
-			entry.Stats.LeagueRankPointsFor = leagueRankPointsFor[entry.Team.Name]
-			entry.Stats.LeagueRankPointsAgainst = leagueRankPointsAgainst[entry.Team.Name]
+		for _, entry := range confEntries {
+			entry.Stats.LeagueRankPointsFor = leagueRankPf[entry.Team.Name]
+			entry.Stats.LeagueRankPointsAgainst = leagueRankPa[entry.Team.Name]
 
-			entry.Stats.ConferenceRankPointsFor = conferenceRankPointsFor[entry.Team.Name]
-			entry.Stats.ConferenceRankPointsAgainst = conferenceRankPointsAgainst[entry.Team.Name]
+			entry.Stats.ConferenceRankPointsFor = confRankPf[entry.Team.Name]
+			entry.Stats.ConferenceRankPointsAgainst = confRankPa[entry.Team.Name]
 		}
 	}
 

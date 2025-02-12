@@ -63,7 +63,7 @@ func (s *Sorter) Sort(entries []entry.Entry, teamSchedules map[string]schedule.S
 		return TripleEliminationSort(entries, teamSchedules)
 	}
 
-	panic(fmt.Sprintf("Unknown tiebreak method %s for sorter %s", s.TiebreakMethod, s.Name))
+	panic(fmt.Sprintf("Unknown tiebreak method (%s) for sorter %s", s.TiebreakMethod, s.Name))
 }
 
 // SubgroupSort is used specifically at the top level for win percentage.

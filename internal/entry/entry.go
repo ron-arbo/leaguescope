@@ -207,3 +207,12 @@ func Teams(entries []Entry) string {
 func SplitAround(entries []Entry, index int) ([]Entry, []Entry) {
 	return entries[:index], entries[index:]
 }
+
+func Names(entries []Entry) string {
+	var out string
+	for _, entry := range entries {
+		out = out + entry.TeamName() + " "
+	}
+
+	return out
+}

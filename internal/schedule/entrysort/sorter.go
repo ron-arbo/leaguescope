@@ -18,8 +18,6 @@ type Sorter struct {
 
 	TiebreakMethod string // "subgroup" | "elimination" |  "double elimination" | "triple elimination"
 
-	// Maybe a Validate() function to ensure the entries passed are valid for this sorter?
-
 	// Add a cache for recent results?
 }
 
@@ -190,71 +188,82 @@ func WithinDivisionThreeClubsSorter() *Sorter {
 	}
 
 	h2hSorter := &Sorter{
-		Name:       "Head to Head",
-		SortByMap:  HeadToHeadMap,
-		Tiebreaker: nil,
+		Name:           "Head to Head",
+		SortByMap:      HeadToHeadMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	divisionRecordSorter := &Sorter{
-		Name:       "Division Record",
-		SortByMap:  DivisionMap,
-		Tiebreaker: nil,
+		Name:           "Division Record",
+		SortByMap:      DivisionMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	commonRecordSorter := &Sorter{
-		Name:       "Common Games",
-		SortByMap:  CommonGamesMap,
-		Tiebreaker: nil,
+		Name:           "Common Games",
+		SortByMap:      CommonGamesMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	conferenceRecordSorter := &Sorter{
-		Name:       "Conference Record",
-		SortByMap:  ConferenceMap,
-		Tiebreaker: nil,
+		Name:           "Conference Record",
+		SortByMap:      ConferenceMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	strengthOfVictorySorter := &Sorter{
-		Name:       "Strength of Victory",
-		SortByMap:  StrengthOfVictoryMap,
-		Tiebreaker: nil,
+		Name:           "Strength of Victory",
+		SortByMap:      StrengthOfVictoryMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	strengthOfScheduleSorter := &Sorter{
-		Name:       "Strength of Schedule",
-		SortByMap:  StrengthOfScheduleMap,
-		Tiebreaker: nil,
+		Name:           "Strength of Schedule",
+		SortByMap:      StrengthOfScheduleMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	combinedRankConferenceSorter := &Sorter{
-		Name:       "Combined Rank Conference",
-		SortByMap:  CombinedRankingConferenceMap,
-		Tiebreaker: nil,
+		Name:           "Combined Rank Conference",
+		SortByMap:      CombinedRankingConferenceMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	combinedRankAllSorter := &Sorter{
-		Name:       "Combined Rank All",
-		SortByMap:  CombinedRankingLeagueMap,
-		Tiebreaker: nil,
+		Name:           "Combined Rank All",
+		SortByMap:      CombinedRankingLeagueMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	netPointsCommonSorter := &Sorter{
-		Name:       "Net points in common games",
-		SortByMap:  NetPointsCommonMap,
-		Tiebreaker: nil,
+		Name:           "Net points in common games",
+		SortByMap:      NetPointsCommonMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	netPointsSorter := &Sorter{
-		Name:       "Net Points",
-		SortByMap:  NetPointsMap,
-		Tiebreaker: nil,
+		Name:           "Net Points",
+		SortByMap:      NetPointsMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	// TODO: touchdowns
 
 	coinTossSorter := &Sorter{
-		Name:       "Coin Toss",
-		SortByMap:  CoinTossMap,
-		Tiebreaker: nil,
+		Name:           "Coin Toss",
+		SortByMap:      CoinTossMap,
+		Tiebreaker:     nil,
+		TiebreakMethod: elimination,
 	}
 
 	// Set tiebreakers

@@ -4,6 +4,12 @@ import (
 	"slices"
 )
 
+type Team struct {
+	Name       string `json:"name"` // Could split this into struct containing city + team, but let's keep it simple for now
+	Conference string `json:"conference"`
+	Division   string `json:"division"`
+}
+
 const (
 	// Conferences
 	AFC = "American Football Conference"
@@ -203,7 +209,7 @@ var (
 	}
 
 	SeattleSeahawks = Team{
-		Name:       "Seattle eahawks",
+		Name:       "Seattle Seahawks",
 		Conference: NFC,
 		Division:   NFCWest,
 	}
@@ -311,4 +317,13 @@ func SameDivision(t1, t2 string) bool {
 
 func SameConference(t1, t2 string) bool {
 	return DisplayNameToTeam(t1).Conference == DisplayNameToTeam(t2).Conference
+}
+
+func Names(teams []Team) string {
+	var out string
+	for _, team := range teams {
+		out = out + team.Name + " "
+	}
+
+	return out
 }
