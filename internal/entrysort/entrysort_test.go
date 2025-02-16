@@ -11,7 +11,7 @@ func orderMatched(entries []entry.Entry, teams []team.Team) bool {
 		return false
 	}
 
-	for i, _ := range entries {
+	for i := range entries {
 		if entries[i].Team.Name != teams[i].Name {
 			return false
 		}

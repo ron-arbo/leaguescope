@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"nfl-app/internal/entry"
+	"nfl-app/internal/entrysort"
 	"nfl-app/internal/schedule"
-	"nfl-app/internal/schedule/entrysort"
 	"nfl-app/internal/scraper"
 	"nfl-app/internal/team"
 )

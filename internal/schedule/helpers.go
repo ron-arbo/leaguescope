@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"nfl-app/internal/entry"
 	"nfl-app/internal/game"
+	"nfl-app/internal/stats"
 	"slices"
 	"sort"
 )
@@ -60,7 +61,7 @@ func CommonOpponents(teams []string, ts map[string]Schedule) []string {
 }
 
 // CommonGamesRecords returns a map of team names to their Record in common games with respect to the other teams in the given entries
-func CommonGamesRecords(entries []entry.Entry, ts map[string]Schedule) map[string]*entry.Record {
+func CommonGamesRecords(entries []entry.Entry, ts map[string]Schedule) map[string]*stats.Record {
 	// Create slice of names
 	var teamNames []string
 	for _, entry := range entries {
@@ -68,10 +69,10 @@ func CommonGamesRecords(entries []entry.Entry, ts map[string]Schedule) map[strin
 	}
 
 	commonOpps := CommonOpponents(teamNames, ts)
-	commonGamesRecord := make(map[string]*entry.Record)
+	commonGamesRecord := make(map[string]*stats.Record)
 
 	for _, team := range teamNames {
-		record := &entry.Record{}
+		record := &stats.Record{}
 		teamSchedule := ts[team]
 		opponentMap := teamSchedule.OpponentMapFor(team)
 
@@ -134,13 +135,13 @@ func HeadToHeadGames(entries []entry.Entry, ts map[string]Schedule) []game.Game 
 	return h2hGames
 }
 
-func HeadToHeadRecords(entries []entry.Entry, ts map[string]Schedule) map[string]*entry.Record {
+func HeadToHeadRecords(entries []entry.Entry, ts map[string]Schedule) map[string]*stats.Record {
 	h2hGames := HeadToHeadGames(entries, ts)
-	h2hRecords := make(map[string]*entry.Record)
+	h2hRecords := make(map[string]*stats.Record)
 
 	// Initialize record for each team
 	for _, ent := range entries {
-		h2hRecords[ent.Team.Name] = &entry.Record{}
+		h2hRecords[ent.Team.Name] = &stats.Record{}
 	}
 
 	for _, game := range h2hGames {
@@ -177,7 +178,7 @@ func StrengthOf(team string, entries []entry.Entry, ts map[string]Schedule, attr
 		panic("unknown attribute")
 	}
 
-	combinedOpponentRecord := entry.NewRecord(0, 0, 0)
+	combinedOpponentRecord := stats.NewRecord(0, 0, 0)
 
 	// Create map of team names to Entry for convenience
 	teamMap := make(map[string]entry.Entry)
@@ -207,7 +208,7 @@ func StrengthOf(team string, entries []entry.Entry, ts map[string]Schedule, attr
 
 		// For schedule, consider all games
 		oppEntry := teamMap[opp]
-		oppRecord := entry.NewRecord(
+		oppRecord := stats.NewRecord(
 			oppEntry.Stats.Record.Wins(),
 			oppEntry.Stats.Record.Losses(),
 			oppEntry.Stats.Record.Ties(),

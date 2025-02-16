@@ -9,7 +9,8 @@ import (
 
 // This file contains a series of "scenarios" (a combination of entries and team schedules)
 //
-// Each scenario is meant to test a specific tiebreaker scenario from https://www.nfl.com/standings/tie-breaking-procedures
+// Each scenario is meant to test a specific tiebreaker scenario
+// from https://www.nfl.com/standings/tie-breaking-procedures
 
 type Scenario struct {
 	entries   []entry.Entry
