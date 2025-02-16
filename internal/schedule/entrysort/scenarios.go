@@ -337,7 +337,7 @@ func Division2ClubsStrengthOfSchedule() Scenario {
 	}
 }
 
-func ConferenceRank() Scenario {
+func Division2ClubsConferenceRank() Scenario {
 	sched := schedule.NewSchedule()
 
 	// Pats 1-0, 30 points for, 20 points against
@@ -372,7 +372,7 @@ func ConferenceRank() Scenario {
 	}
 }
 
-func LeagueRank() Scenario {
+func Division2ClubsLeagueRank() Scenario {
 	sched := schedule.NewSchedule()
 
 	// Points For:
@@ -419,6 +419,92 @@ func LeagueRank() Scenario {
 		PtsLose: 15,
 	}
 	sched.AddGame(2, giantsAtBears)
+
+	entries := schedule.CreateEntries(sched)
+	// Filter so only the tied teams we care about are sorted
+	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
+	return Scenario{
+		entries:   filtered,
+		schedules: sched.SplitToTeams(),
+	}
+}
+
+func Division2ClubsNetPointsCommonGames() Scenario {
+	sched := schedule.NewSchedule()
+
+	// Pats 1-1, 0-0 div, 1-0 v Texans (+10 net)
+	// Jets 1-1, 0-0 div, 1-0 v Texans (+5 net)
+
+	// Week 1: Pats get their Texans win. Jets lose
+	patsAtTexans := game.Game{
+		Winner:  team.NewEnglandPatriots.Name,
+		Loser:   team.HoustonTexans.Name,
+		Home:    team.HoustonTexans.Name,
+		Away:    team.NewEnglandPatriots.Name,
+		PtsWin:  30,
+		PtsLose: 20,
+	}
+	jetsAtSteelers := game.Game{
+		Winner: team.PittsburghSteelers.Name,
+		Loser:  team.NewYorkJets.Name,
+		Home:   team.PittsburghSteelers.Name,
+		Away:   team.NewYorkJets.Name,
+	}
+	sched.AddGame(1, patsAtTexans)
+	sched.AddGame(1, jetsAtSteelers)
+
+	// Week 2: Jets get their Texans win. Pats lose
+	bengalsAtPats := game.Game{
+		Winner: team.CincinnatiBengals.Name,
+		Loser:  team.NewEnglandPatriots.Name,
+		Home:   team.NewEnglandPatriots.Name,
+		Away:   team.CincinnatiBengals.Name,
+	}
+	texansAtJets := game.Game{
+		Winner:  team.NewYorkJets.Name,
+		Loser:   team.HoustonTexans.Name,
+		Home:    team.NewYorkJets.Name,
+		Away:    team.HoustonTexans.Name,
+		PtsWin:  20,
+		PtsLose: 15,
+	}
+	sched.AddGame(2, bengalsAtPats)
+	sched.AddGame(2, texansAtJets)
+
+	entries := schedule.CreateEntries(sched)
+	// Filter so only the tied teams we care about are sorted
+	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
+	return Scenario{
+		entries:   filtered,
+		schedules: sched.SplitToTeams(),
+	}
+}
+
+func Division2ClubsNetPoints() Scenario {
+	sched := schedule.NewSchedule()
+
+	// Pats 0-1, -5 net
+	// Jets 0-1, -10 net
+
+	// Week 1: Pats and Jets both lost, Pats better diff
+	patsAtCards := game.Game{
+		Winner:  team.ArizonaCardinals.Name,
+		Loser:   team.NewEnglandPatriots.Name,
+		Home:    team.ArizonaCardinals.Name,
+		Away:    team.NewEnglandPatriots.Name,
+		PtsWin:  30,
+		PtsLose: 25,
+	}
+	jetsAtRams := game.Game{
+		Winner:  team.LosAngelesRams.Name,
+		Loser:   team.NewYorkJets.Name,
+		Home:    team.LosAngelesRams.Name,
+		Away:    team.NewYorkJets.Name,
+		PtsWin:  20,
+		PtsLose: 10,
+	}
+	sched.AddGame(1, patsAtCards)
+	sched.AddGame(1, jetsAtRams)
 
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted

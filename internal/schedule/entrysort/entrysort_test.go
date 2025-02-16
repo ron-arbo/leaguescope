@@ -67,13 +67,26 @@ func TestSortEntries(t *testing.T) {
 		// },
 		// {
 		// 	name:    "Best combined ranking among conference teams in points scored and points allowed in all games",
-		// 	args:    ConferenceRank(),
+		// 	args:    Division2ClubsConferenceRank(),
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 		// 	wantErr: false,
 		// },
+		// {
+		// 	name:    "Best combined ranking among all teams in points scored and points allowed in all games",
+		// 	args:    Division2ClubsLeagueRank(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Net points common games",
+		// 	args:    Division2ClubsNetPointsCommonGames(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// Cannot test coin toss as it is random
 		{
-			name:    "Best combined ranking among all teams in points scored and points allowed in all games",
-			args:    LeagueRank(),
+			name:    "Net points",
+			args:    Division2ClubsNetPoints(),
 			want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 			wantErr: false,
 		},
