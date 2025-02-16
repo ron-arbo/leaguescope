@@ -22,3 +22,6 @@ type Game struct {
 	ToWin  int
 	ToLose int
 }
+
+// TODO:
+// game.Validate() make sure no negative values, two unique teams, etc

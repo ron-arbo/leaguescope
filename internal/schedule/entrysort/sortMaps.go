@@ -59,7 +59,7 @@ func HeadToHeadSweepMap(entries []entry.Entry, ts map[string]schedule.Schedule) 
 func DivisionMap(entries []entry.Entry, ts map[string]schedule.Schedule) map[string]float64 {
 	sortBy := make(map[string]float64)
 	for _, entry := range entries {
-		sortBy[entry.Team.Name] = entry.Stats.Record.WinPercentage()
+		sortBy[entry.Team.Name] = entry.Stats.DivisionRecord.WinPercentage()
 	}
 	return sortBy
 }

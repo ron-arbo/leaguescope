@@ -20,6 +20,8 @@ func orderMatched(entries []entry.Entry, teams []team.Team) bool {
 	return true
 }
 
+// TODO: If possible, should we test both ways in case a group of entries is already sorted by default?
+// Or maybe just ensure it isn't when we give it as input?
 func TestSortEntries(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -27,11 +29,52 @@ func TestSortEntries(t *testing.T) {
 		want    []team.Team // Just use the team instead of the entire entry
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// {
+		// 	name:    "Division 2 Clubs Head to Head",
+		// 	args:    Division2ClubsHeadToHead(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Division 2 Clubs Division Record",
+		// 	args:    Division2ClubsDivisionRecord(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Division 2 Clubs Common Games",
+		// 	args:    Division2ClubsCommonGames(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Division 2 Clubs Conference Record",
+		// 	args:    Division2ClubsConferenceRecord(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Division 2 Clubs Strength of Victory",
+		// 	args:    Division2ClubsStrengthOfVictory(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Division 2 Clubs Strength of Schedule",
+		// 	args:    Division2ClubsStrengthOfSchedule(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name:    "Best combined ranking among conference teams in points scored and points allowed in all games",
+		// 	args:    ConferenceRank(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
 		{
-			name:    "Division 2 Clubs Head to Head",
-			args:    Division2ClubsHeadToHead(),
-			want:    []team.Team{team.BuffaloBills, team.NewEnglandPatriots, team.NewYorkJets, team.MiamiDolphins},
+			name:    "Best combined ranking among all teams in points scored and points allowed in all games",
+			args:    LeagueRank(),
+			want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 			wantErr: false,
 		},
 	}

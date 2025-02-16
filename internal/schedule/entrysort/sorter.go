@@ -135,7 +135,7 @@ func WithinDivisionTwoClubsSorter() *Sorter {
 
 	combinedRankAllSorter := &Sorter{
 		Name:           "Combined Rank All",
-		SortByMap:      CombinedRankingConferenceMap,
+		SortByMap:      CombinedRankingLeagueMap,
 		Tiebreaker:     nil,
 		TiebreakMethod: elimination,
 	}

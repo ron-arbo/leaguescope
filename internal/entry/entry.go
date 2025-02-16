@@ -4,6 +4,7 @@ import (
 	"nfl-app/internal/game"
 	"nfl-app/internal/stats"
 	"nfl-app/internal/team"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -215,4 +216,14 @@ func Names(entries []Entry) string {
 	}
 
 	return out
+}
+
+func FilterEntries(entries []Entry, teams []team.Team) []Entry {
+	var filtered []Entry
+	for _, entry := range entries {
+		if slices.Contains(teams, entry.Team) {
+			filtered = append(filtered, entry)
+		}
+	}
+	return filtered
 }

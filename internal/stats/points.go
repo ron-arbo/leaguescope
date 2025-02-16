@@ -1,8 +1,8 @@
 package stats
 
 type Points struct {
-	For         int
-	Against     int
+	For     int
+	Against int
 }
 
 func (p *Points) Differential() int {

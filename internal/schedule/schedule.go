@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"maps"
 	"nfl-app/internal/entry"
 	"nfl-app/internal/game"
 	"nfl-app/internal/scraper"
@@ -191,22 +192,28 @@ func CreateEntries(schedule Schedule) []entry.Entry {
 		entries[i] = entry
 	}
 
-	// Combined ranking among conference teams in points scored and points allowed
+	// League rank maps
 	leagueRankPf := Ranking(entries, pointsFor)
 	leagueRankPa := Ranking(entries, pointsAgainst)
 
+	// Conference rank maps
+	confRankPf := make(map[string]int)
+	confRankPa := make(map[string]int)
 	for _, conf := range team.Conferences {
 		confEntries := entry.ConferenceEntries(entries, conf)
-		confRankPf := Ranking(confEntries, pointsFor)
-		confRankPa := Ranking(confEntries, pointsAgainst)
+		maps.Copy(confRankPf, Ranking(confEntries, pointsFor))
+		maps.Copy(confRankPa, Ranking(confEntries, pointsAgainst))
+	}
 
-		for _, entry := range confEntries {
-			entry.Stats.LeagueRankPointsFor = leagueRankPf[entry.Team.Name]
-			entry.Stats.LeagueRankPointsAgainst = leagueRankPa[entry.Team.Name]
+	// Populate entries using maps
+	for i, entry := range entries {
+		entry.Stats.LeagueRankPointsFor = leagueRankPf[entry.Team.Name]
+		entry.Stats.LeagueRankPointsAgainst = leagueRankPa[entry.Team.Name]
 
-			entry.Stats.ConferenceRankPointsFor = confRankPf[entry.Team.Name]
-			entry.Stats.ConferenceRankPointsAgainst = confRankPa[entry.Team.Name]
-		}
+		entry.Stats.ConferenceRankPointsFor = confRankPf[entry.Team.Name]
+		entry.Stats.ConferenceRankPointsAgainst = confRankPa[entry.Team.Name]
+
+		entries[i] = entry
 	}
 
 	return entries
