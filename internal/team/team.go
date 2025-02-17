@@ -2,6 +2,9 @@ package team
 
 import (
 	"slices"
+	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 type Team struct {
@@ -323,6 +326,33 @@ func Names(teams []Team) string {
 	var out string
 	for _, team := range teams {
 		out = out + team.Name + " "
+	}
+
+	return out
+}
+
+func GetRandomTeams(count int, noTeams []Team, noDivs []string, noConf string) []Team {
+	rand.Seed(uint64(time.Now().UnixNano()))
+	out := make([]Team, 0, count)
+
+	// TODO: Better to make these map[string]interface{}?
+	seenTeams := make(map[string]bool)
+	seenDivs := make(map[string]bool)
+
+	for _, team := range noTeams {
+		seenTeams[team.Name] = true
+	}
+	for _, div := range noDivs {
+		seenDivs[div] = true
+	}
+
+	for len(out) < count {
+		randomTeam := NFLTeams[rand.Intn(len(NFLTeams))]
+		if !seenTeams[randomTeam.Name] && !seenDivs[randomTeam.Division] && randomTeam.Conference != noConf {
+			out = append(out, randomTeam)
+			// Update seenTeams so we don't have duplicates
+			seenTeams[randomTeam.Name] = true
+		}
 	}
 
 	return out

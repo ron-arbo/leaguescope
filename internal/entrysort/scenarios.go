@@ -17,47 +17,42 @@ type Scenario struct {
 	schedules map[string]schedule.Schedule
 }
 
-// Two clubs, within division
-// Head to Head
-func Division2ClubsHeadToHead() Scenario {
+// HeadToHead returns a general scenario in which t1 breaks
+// the tie with t2 by head to head record
+func HeadToHead(t1, t2 team.Team) Scenario {
+	// Get two other teams for them to play
+	others := team.GetRandomTeams(2, []team.Team{t1, t2})
+
 	sched := schedule.NewSchedule()
 
-	// Patriots 1-1, 1-0 H2H
-	// Jets     1-1, 0-1 H2H
+	// Week 1: t1 beats t2
+	t1Att2 := game.Game{
+		Winner: t1.Name,
+		Loser:  t2.Name,
+		Home:   t2.Name,
+		Away:   t1.Name,
+	}
+	sched.AddGame(1, t1Att2)
 
-	jetsAtPats := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.NewYorkJets.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.NewYorkJets.Name,
+	// Week 2: t1 loses to an other, t2 beats an other. Records evened
+	t1AtOther1 := game.Game{
+		Winner: others[0].Name,
+		Loser:  t1.Name,
+		Home:   others[0].Name,
+		Away:   t1.Name,
 	}
-	billsAtFins := game.Game{
-		Winner: team.BuffaloBills.Name,
-		Loser:  team.MiamiDolphins.Name,
-		Home:   team.MiamiDolphins.Name,
-		Away:   team.BuffaloBills.Name,
+	t2AtOther2 := game.Game{
+		Winner: t2.Name,
+		Loser:  others[1].Name,
+		Home:   others[1].Name,
+		Away:   t2.Name,
 	}
-	sched.AddGame(1, jetsAtPats)
-	sched.AddGame(2, billsAtFins)
-
-	patsAtBills := game.Game{
-		Winner: team.BuffaloBills.Name,
-		Loser:  team.NewEnglandPatriots.Name,
-		Home:   team.BuffaloBills.Name,
-		Away:   team.NewEnglandPatriots.Name,
-	}
-	finsAtJets := game.Game{
-		Winner: team.NewYorkJets.Name,
-		Loser:  team.MiamiDolphins.Name,
-		Home:   team.NewYorkJets.Name,
-		Away:   team.MiamiDolphins.Name,
-	}
-	sched.AddGame(2, patsAtBills)
-	sched.AddGame(2, finsAtJets)
+	sched.AddGame(2, t1AtOther1)
+	sched.AddGame(2, t2AtOther2)
 
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
+	filtered := entry.FilterEntries(entries, []team.Team{t1, t2})
 	return Scenario{
 		entries:   filtered,
 		schedules: sched.SplitToTeams(),
@@ -204,6 +199,12 @@ func Division2ClubsConferenceRecord() Scenario {
 		schedules: sched.SplitToTeams(),
 	}
 }
+
+// func StrengthOfVictory(t1, t2 team.Team) Scenario {
+// 	// Get two other teams for them to play
+// 	// Make them non-conference so we don't interfere with previous tiebreakers
+// 	others := team.GetRandomTeams(2, []team.Team{t1, t2})
+// }
 
 func Division2ClubsStrengthOfVictory() Scenario {
 	sched := schedule.NewSchedule()
@@ -510,53 +511,6 @@ func Division2ClubsNetPoints() Scenario {
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted
 	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
-	return Scenario{
-		entries:   filtered,
-		schedules: sched.SplitToTeams(),
-	}
-}
-
-func Conference2ClubsHeadtoHead() Scenario {
-	sched := schedule.NewSchedule()
-
-	// Patriots 1-1, 1-0 H2H
-	// Raiders  1-1, 0-1 H2H
-
-	// Week 1: Pats beat Raiders
-	raidersAtPats := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.LasVegasRaiders.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.LasVegasRaiders.Name,
-	}
-	billsAtFins := game.Game{
-		Winner: team.BuffaloBills.Name,
-		Loser:  team.MiamiDolphins.Name,
-		Home:   team.MiamiDolphins.Name,
-		Away:   team.BuffaloBills.Name,
-	}
-	sched.AddGame(1, raidersAtPats)
-	sched.AddGame(2, billsAtFins)
-
-	// Week 2: Pats lose and Raiders win to even record
-	patsAtBills := game.Game{
-		Winner: team.BuffaloBills.Name,
-		Loser:  team.NewEnglandPatriots.Name,
-		Home:   team.BuffaloBills.Name,
-		Away:   team.NewEnglandPatriots.Name,
-	}
-	finsAtRaiders := game.Game{
-		Winner: team.LasVegasRaiders.Name,
-		Loser:  team.MiamiDolphins.Name,
-		Home:   team.LasVegasRaiders.Name,
-		Away:   team.MiamiDolphins.Name,
-	}
-	sched.AddGame(2, patsAtBills)
-	sched.AddGame(2, finsAtRaiders)
-
-	entries := schedule.CreateEntries(sched)
-	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders})
 	return Scenario{
 		entries:   filtered,
 		schedules: sched.SplitToTeams(),

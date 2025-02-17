@@ -29,12 +29,12 @@ func TestSortEntries(t *testing.T) {
 		want    []team.Team // Just use the team instead of the entire entry
 		wantErr bool
 	}{
-		// {
-		// 	name:    "Division 2 Clubs Head to Head",
-		// 	args:    Division2ClubsHeadToHead(),
-		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
-		// 	wantErr: false,
-		// },
+		{
+			name:    "Division 2 Clubs Head to Head",
+			args:    HeadToHead(team.NewEnglandPatriots, team.NewYorkJets),
+			want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+			wantErr: false,
+		},
 		// {
 		// 	name:    "Division 2 Clubs Division Record",
 		// 	args:    Division2ClubsDivisionRecord(),
@@ -90,12 +90,12 @@ func TestSortEntries(t *testing.T) {
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 		// 	wantErr: false,
 		// },
-		// {
-		// 	name:    "Conference 2 Clubs Head to Head",
-		// 	args:    Conference2ClubsHeadtoHead(),
-		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
-		// 	wantErr: false,
-		// },
+		{
+			name:    "Conference 2 Clubs Head to Head",
+			args:    HeadToHead(team.NewEnglandPatriots, team.LasVegasRaiders),
+			want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
+			wantErr: false,
+		},
 		// {
 		// 	name:    "Conference 2 Clubs Conference Record",
 		// 	args:    Conference2ClubsConferenceRecord(),
@@ -138,12 +138,12 @@ func TestSortEntries(t *testing.T) {
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
 		// 	wantErr: false,
 		// },
-		{
-			name:    "Conference 2 Clubs net points",
-			args:    Conference2ClubsNetPoints(),
-			want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
-			wantErr: false,
-		},
+		// {
+		// 	name:    "Conference 2 Clubs net points",
+		// 	args:    Conference2ClubsNetPoints(),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
+		// 	wantErr: false,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

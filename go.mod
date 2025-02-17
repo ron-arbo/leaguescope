@@ -1,10 +1,13 @@
 module nfl-app
 
-go 1.23
+go 1.23.0
 
 toolchain go1.23.6
 
-require github.com/gocolly/colly v1.2.0
+require (
+	github.com/gocolly/colly v1.2.0
+	golang.org/x/exp v0.0.0-20250215185904-eff6e970281f
+)
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1 // indirect
