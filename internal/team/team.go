@@ -331,6 +331,24 @@ func Names(teams []Team) string {
 	return out
 }
 
+// TODO: Potential enhancement to GetRandomTeams()
+// TeamGen is used to generate a collection of teams based on certain criteria
+// type TeamGen struct {
+// 	// TODO mustHave, if we want it
+// 	canHave    GenCriteria
+// 	cannotHave GenCriteria
+// }
+
+// type GenCriteria struct {
+// 	teams      []Team
+// 	divisions  []string
+// 	conference string
+// }
+
+// func (tg *TeamGen) GenerateRandomTeams(count int) []Team {
+
+// }
+
 func GetRandomTeams(count int, noTeams []Team, noDivs []string, noConf string) []Team {
 	rand.Seed(uint64(time.Now().UnixNano()))
 	out := make([]Team, 0, count)

@@ -11,8 +11,8 @@ func main() {
 	// 	panic(err)
 	// }
 
-	teams := team.GetRandomTeams(9, []team.Team{team.ArizonaCardinals, team.BaltimoreRavens},
-		[]string{"NFC South, NFC East"}, "American Football Conference")
+	teams := team.GetRandomTeams(7, []team.Team{team.ArizonaCardinals, team.BaltimoreRavens},
+		[]string{"NFC South", "NFC East"}, "American Football Conference")
 	fmt.Println(team.Names(teams))
 
 	// sched := schedule.CreateSchedule(scrapedRows)

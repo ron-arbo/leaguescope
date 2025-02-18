@@ -1,6 +1,7 @@
 package entrysort
 
 import (
+	"fmt"
 	"nfl-app/internal/entry"
 	"nfl-app/internal/game"
 	"nfl-app/internal/schedule"
@@ -21,7 +22,7 @@ type Scenario struct {
 // the tie with t2 by head to head record
 func HeadToHead(t1, t2 team.Team) Scenario {
 	// Get two other teams for them to play
-	others := team.GetRandomTeams(2, []team.Team{t1, t2})
+	others := team.GetRandomTeams(2, []team.Team{t1, t2}, nil, "")
 
 	sched := schedule.NewSchedule()
 
@@ -153,116 +154,78 @@ func Division2ClubsCommonGames() Scenario {
 	}
 }
 
-func Division2ClubsConferenceRecord() Scenario {
+func StrengthOfVictory(t1, t2 team.Team) Scenario {
 	sched := schedule.NewSchedule()
+	// Get two other teams for them to play
+	//
+	// If the two teams given are from the same conference, select two teams from the
+	// other conference as opponents so we don't interferece with previous tiebreakers
+	//
+	// If the two teams given are from different conferences, select any other two teams as the
+	// only league tiebreakers before strength of victory are head to head and common games
+	var noConf string
+	if t1.Conference == t2.Conference {
+		noConf = t1.Conference
+	}
+	others := team.GetRandomTeams(4, []team.Team{t1, t2}, nil, noConf)
 
-	// Pats 1-1, 1-0 in conf
-	// Jets 1-1, 0-1 in conf
+	t1Opps := []string{others[0].Name, others[1].Name} // Win all games not against t1 --> good SOV
+	t2Opps := []string{others[2].Name, others[3].Name} // Lose all games (including t2) --> bad SOV
 
-	// Week 1: Pats get their conference win, Jets get their loss (both non-divisional)
-	patsAtTexans := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.HoustonTexans.Name,
-		Home:   team.HoustonTexans.Name,
-		Away:   team.NewEnglandPatriots.Name,
-	}
-	jetsAtSteelers := game.Game{
-		Winner: team.PittsburghSteelers.Name,
-		Loser:  team.NewYorkJets.Name,
-		Home:   team.PittsburghSteelers.Name,
-		Away:   team.NewYorkJets.Name,
-	}
-	sched.AddGame(1, patsAtTexans)
-	sched.AddGame(1, jetsAtSteelers)
+	// t1 | 2-0 | Opponents 2-2
+	// t2 | 2-0 | Opponents 0-4
 
-	// Week 2: Pats lose and Jets win to even win pct. Both games out of conference
-	cardinalsAtPats := game.Game{
-		Winner: team.ArizonaCardinals.Name,
-		Loser:  team.NewEnglandPatriots.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.ArizonaCardinals.Name,
+	// Week 1: t1 and t2 both win
+	// t1's future opponent wins, t2's future opponent loses
+	t1AtOpp := game.Game{
+		Winner: t1.Name,
+		Loser:  t1Opps[0],
+		Home:   t1Opps[0],
+		Away:   t1.Name,
 	}
-	jetsAtGiants := game.Game{
-		Winner: team.NewYorkJets.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.NewYorkJets.Name,
-		Away:   team.NewYorkGiants.Name,
+	t2AtOpp := game.Game{
+		Winner: t2.Name,
+		Loser:  t2Opps[0],
+		Home:   t2Opps[0],
+		Away:   t2.Name,
 	}
-	sched.AddGame(2, cardinalsAtPats)
-	sched.AddGame(2, jetsAtGiants)
+	t1OppAtt2Opp := game.Game{
+		Winner: t1Opps[1],
+		Loser:  t2Opps[1],
+		Home:   t2Opps[1],
+		Away:   t1Opps[1],
+	}
+	sched.AddGame(1, t1AtOpp)
+	sched.AddGame(1, t2AtOpp)
+	sched.AddGame(1, t1OppAtt2Opp)
+
+	// Week 1: t1 and t2 both win
+	// t1's previous opponent wins, t2's previous opponent loses
+	oppAtt1 := game.Game{
+		Winner: t1.Name,
+		Loser:  t1Opps[1],
+		Home:   t1.Name,
+		Away:   t1Opps[1],
+	}
+	oppAtt2 := game.Game{
+		Winner: t2.Name,
+		Loser:  t2Opps[1],
+		Home:   t2.Name,
+		Away:   t2Opps[1],
+	}
+	t2OppAtt1Opp := game.Game{
+		Winner: t1Opps[0],
+		Loser:  t2Opps[0],
+		Home:   t1Opps[0],
+		Away:   t2Opps[0],
+	}
+	sched.AddGame(1, oppAtt1)
+	sched.AddGame(1, oppAtt2)
+	sched.AddGame(1, t2OppAtt1Opp)
 
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
-	return Scenario{
-		entries:   filtered,
-		schedules: sched.SplitToTeams(),
-	}
-}
-
-// func StrengthOfVictory(t1, t2 team.Team) Scenario {
-// 	// Get two other teams for them to play
-// 	// Make them non-conference so we don't interfere with previous tiebreakers
-// 	others := team.GetRandomTeams(2, []team.Team{t1, t2})
-// }
-
-func Division2ClubsStrengthOfVictory() Scenario {
-	sched := schedule.NewSchedule()
-
-	// Pats 2-0, Opponents beaten 2-2
-	// Jets 2-0, Opponents beaten 0-4
-
-	// Week 1: Pats and Jets both win.
-	// Seahawks (Pats future opponent) win, Rams (Jets future opponent) lose
-	patsAtCards := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.ArizonaCardinals.Name,
-		Home:   team.ArizonaCardinals.Name,
-		Away:   team.NewEnglandPatriots.Name,
-	}
-	jetsAtGiants := game.Game{
-		Winner: team.NewYorkJets.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.NewYorkGiants.Name,
-		Away:   team.NewYorkJets.Name,
-	}
-	seahawksAtRams := game.Game{
-		Winner: team.SeattleSeahawks.Name,
-		Loser:  team.LosAngelesRams.Name,
-		Home:   team.LosAngelesRams.Name,
-		Away:   team.SeattleSeahawks.Name,
-	}
-	sched.AddGame(1, patsAtCards)
-	sched.AddGame(1, jetsAtGiants)
-	sched.AddGame(1, seahawksAtRams)
-
-	// Week 2: Pats and Jets both win
-	// Cardinals (Pats previous opponent) win, Giants (Jets previous opponent) lose
-	seahawksAtPats := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.SeattleSeahawks.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.SeattleSeahawks.Name,
-	}
-	ramsAtJets := game.Game{
-		Winner: team.NewYorkJets.Name,
-		Loser:  team.LosAngelesRams.Name,
-		Home:   team.NewYorkJets.Name,
-		Away:   team.LosAngelesRams.Name,
-	}
-	cardinalsAtGiants := game.Game{
-		Winner: team.ArizonaCardinals.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.NewYorkGiants.Name,
-		Away:   team.ArizonaCardinals.Name,
-	}
-	sched.AddGame(2, seahawksAtPats)
-	sched.AddGame(2, ramsAtJets)
-	sched.AddGame(2, cardinalsAtGiants)
-
-	entries := schedule.CreateEntries(sched)
-	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.NewYorkJets})
+	filtered := entry.FilterEntries(entries, []team.Team{t1, t2})
 	return Scenario{
 		entries:   filtered,
 		schedules: sched.SplitToTeams(),
@@ -517,47 +480,74 @@ func Division2ClubsNetPoints() Scenario {
 	}
 }
 
-func Conference2ClubsConferenceRecord() Scenario {
+func ConferenceRecord(t1, t2 team.Team) Scenario {
 	sched := schedule.NewSchedule()
 
-	// Pats    1-1, 1-0 in conf
-	// Raiders 1-1, 0-1 in conf
+	// Conference record is only used as a tiebreaker when the two teams are from the same conference
+	if t1.Conference != t2.Conference {
+		// TODO: Don't panic
+		panic(fmt.Sprintf("Teams not from the same conference: %s, %s", t1.Name, t2.Name))
+	}
 
-	// Week 1: Pats get their conference win, Raiders get their loss
-	patsAtTexans := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.HoustonTexans.Name,
-		Home:   team.HoustonTexans.Name,
-		Away:   team.NewEnglandPatriots.Name,
+	// If the teams are from the same division, make sure to pick conference teams NOT from
+	// that division, otherwise the division record tiebreaker might kick in before this one
+	//
+	// Not an issue if the teams are not from the same division, as the wild card tiebreaker
+	// does not use division record
+	var noDiv []string
+	if t1.Division == t2.Division {
+		noDiv = append(noDiv, t1.Division)
 	}
-	raidersAtSteelers := game.Game{
-		Winner: team.PittsburghSteelers.Name,
-		Loser:  team.LasVegasRaiders.Name,
-		Home:   team.PittsburghSteelers.Name,
-		Away:   team.LasVegasRaiders.Name,
-	}
-	sched.AddGame(1, patsAtTexans)
-	sched.AddGame(1, raidersAtSteelers)
 
-	// Week 2: Pats lose and Raiders win to even win pct. Both games out of conference
-	cardinalsAtPats := game.Game{
-		Winner: team.ArizonaCardinals.Name,
-		Loser:  team.NewEnglandPatriots.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.ArizonaCardinals.Name,
+	// Find 4 other teams, 2 from the same conference and 2 from the other
+	var otherConf string
+	if t1.Conference == team.AFC {
+		otherConf = team.NFC
+	} else {
+		otherConf = team.AFC
 	}
-	raidersAtGiants := game.Game{
-		Winner: team.LasVegasRaiders.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.LasVegasRaiders.Name,
-		Away:   team.NewYorkGiants.Name,
+
+	confOpps := team.GetRandomTeams(2, nil, noDiv, otherConf)
+	nonConfOpps := team.GetRandomTeams(2, nil, nil, t1.Conference)
+
+	// t1 | 1-1 | 1-0 v conf
+	// t2 | 1-1 | 0-1 v conf
+
+	// Week 1: Both teams win, and t1's game is in-conference
+	t1AtConf := game.Game{
+		Winner: t1.Name,
+		Loser:  confOpps[0].Name,
+		Home:   confOpps[0].Name,
+		Away:   t1.Name,
 	}
-	sched.AddGame(2, cardinalsAtPats)
-	sched.AddGame(2, raidersAtGiants)
+	t2AtNonConf := game.Game{
+		Winner: t2.Name,
+		Loser:  nonConfOpps[0].Name,
+		Home:   nonConfOpps[0].Name,
+		Away:   t2.Name,
+	}
+	sched.AddGame(1, t1AtConf)
+	sched.AddGame(1, t2AtNonConf)
+
+	// Week 2: Both teams lose, and t2's game is in-conference
+	t1AtNonConf := game.Game{
+		Winner: nonConfOpps[1].Name,
+		Loser:  t1.Name,
+		Home:   nonConfOpps[1].Name,
+		Away:   t1.Name,
+	}
+	t2AtConf := game.Game{
+		Winner: confOpps[1].Name,
+		Loser:  t2.Name,
+		Home:   confOpps[1].Name,
+		Away:   t2.Name,
+	}
+	sched.AddGame(2, t1AtNonConf)
+	sched.AddGame(2, t2AtConf)
 
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders})
+	filtered := entry.FilterEntries(entries, []team.Team{t1, t2})
 	return Scenario{
 		entries:   filtered,
 		schedules: sched.SplitToTeams(),
@@ -650,69 +640,6 @@ func Conference2ClubsCommonGames() Scenario {
 	}
 	sched.AddGame(5, ramsAtPats)
 	sched.AddGame(5, cardsAtRaiders)
-
-	entries := schedule.CreateEntries(sched)
-	// Filter so only the tied teams we care about are sorted
-	filtered := entry.FilterEntries(entries, []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders})
-	return Scenario{
-		entries:   filtered,
-		schedules: sched.SplitToTeams(),
-	}
-}
-
-func Conference2ClubsStrengthOfVictory() Scenario {
-	sched := schedule.NewSchedule()
-
-	// Pats    2-0, Opponents beaten 2-2
-	// Raiders 2-0, Opponents beaten 0-4
-
-	// Week 1: Pats and Raiders both win.
-	// Seahawks (Pats future opponent) win, Rams (Raiders future opponent) lose
-	patsAtCards := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.ArizonaCardinals.Name,
-		Home:   team.ArizonaCardinals.Name,
-		Away:   team.NewEnglandPatriots.Name,
-	}
-	raidersAtGiants := game.Game{
-		Winner: team.LasVegasRaiders.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.NewYorkGiants.Name,
-		Away:   team.LasVegasRaiders.Name,
-	}
-	seahawksAtRams := game.Game{
-		Winner: team.SeattleSeahawks.Name,
-		Loser:  team.LosAngelesRams.Name,
-		Home:   team.LosAngelesRams.Name,
-		Away:   team.SeattleSeahawks.Name,
-	}
-	sched.AddGame(1, patsAtCards)
-	sched.AddGame(1, raidersAtGiants)
-	sched.AddGame(1, seahawksAtRams)
-
-	// Week 2: Pats and Raiders both win
-	// Cardinals (Pats previous opponent) win, Giants (Raiders previous opponent) lose
-	seahawksAtPats := game.Game{
-		Winner: team.NewEnglandPatriots.Name,
-		Loser:  team.SeattleSeahawks.Name,
-		Home:   team.NewEnglandPatriots.Name,
-		Away:   team.SeattleSeahawks.Name,
-	}
-	ramsAtRaiders := game.Game{
-		Winner: team.LasVegasRaiders.Name,
-		Loser:  team.LosAngelesRams.Name,
-		Home:   team.LasVegasRaiders.Name,
-		Away:   team.LosAngelesRams.Name,
-	}
-	cardinalsAtGiants := game.Game{
-		Winner: team.ArizonaCardinals.Name,
-		Loser:  team.NewYorkGiants.Name,
-		Home:   team.NewYorkGiants.Name,
-		Away:   team.ArizonaCardinals.Name,
-	}
-	sched.AddGame(2, seahawksAtPats)
-	sched.AddGame(2, ramsAtRaiders)
-	sched.AddGame(2, cardinalsAtGiants)
 
 	entries := schedule.CreateEntries(sched)
 	// Filter so only the tied teams we care about are sorted

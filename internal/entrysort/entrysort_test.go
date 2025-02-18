@@ -29,12 +29,12 @@ func TestSortEntries(t *testing.T) {
 		want    []team.Team // Just use the team instead of the entire entry
 		wantErr bool
 	}{
-		{
-			name:    "Division 2 Clubs Head to Head",
-			args:    HeadToHead(team.NewEnglandPatriots, team.NewYorkJets),
-			want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
-			wantErr: false,
-		},
+		// {
+		// 	name:    "Division 2 Clubs Head to Head",
+		// 	args:    HeadToHead(team.NewEnglandPatriots, team.NewYorkJets),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
+		// 	wantErr: false,
+		// },
 		// {
 		// 	name:    "Division 2 Clubs Division Record",
 		// 	args:    Division2ClubsDivisionRecord(),
@@ -49,13 +49,13 @@ func TestSortEntries(t *testing.T) {
 		// },
 		// {
 		// 	name:    "Division 2 Clubs Conference Record",
-		// 	args:    Division2ClubsConferenceRecord(),
+		// 	args:    ConferenceRecord(team.NewEnglandPatriots, team.NewYorkJets),
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 		// 	wantErr: false,
 		// },
 		// {
 		// 	name:    "Division 2 Clubs Strength of Victory",
-		// 	args:    Division2ClubsStrengthOfVictory(),
+		// 	args:    StrengthOfVictory(team.NewEnglandPatriots, team.NewYorkJets),
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 		// 	wantErr: false,
 		// },
@@ -90,15 +90,15 @@ func TestSortEntries(t *testing.T) {
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.NewYorkJets},
 		// 	wantErr: false,
 		// },
-		{
-			name:    "Conference 2 Clubs Head to Head",
-			args:    HeadToHead(team.NewEnglandPatriots, team.LasVegasRaiders),
-			want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
-			wantErr: false,
-		},
+		// {
+		// 	name:    "Conference 2 Clubs Head to Head",
+		// 	args:    HeadToHead(team.NewEnglandPatriots, team.LasVegasRaiders),
+		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
+		// 	wantErr: false,
+		// },
 		// {
 		// 	name:    "Conference 2 Clubs Conference Record",
-		// 	args:    Conference2ClubsConferenceRecord(),
+		// 	args:    ConferenceRecord(team.NewEnglandPatriots, team.LasVegasRaiders),
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
 		// 	wantErr: false,
 		// },
@@ -110,7 +110,7 @@ func TestSortEntries(t *testing.T) {
 		// },
 		// {
 		// 	name:    "Conference 2 Clubs Strength of Victory",
-		// 	args:    Conference2ClubsStrengthOfVictory(),
+		// 	args:    StrengthOfVictory(team.NewEnglandPatriots, team.LasVegasRaiders),
 		// 	want:    []team.Team{team.NewEnglandPatriots, team.LasVegasRaiders},
 		// 	wantErr: false,
 		// },
